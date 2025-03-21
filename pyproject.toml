@@ -3,5 +3,9 @@ name = "mds-25"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.9"
+dependencies = [
+    "insightface>=0.7.3",
+    "ipykernel>=6.29.5",
+    "onnxruntime>=1.20.1",
+]
