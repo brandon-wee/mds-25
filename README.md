@@ -2,9 +2,11 @@
 
 ## Version Control: Gitflow 
 
-Instead of using simple git branching, we will be using a cleaner versioning system called gitflow. It may be a bit annoying for a project this small, but trust me you'll learn a lot using it :smiley
+Instead of using simple git branching, we will be using a cleaner versioning system called gitflow. It may be a bit annoying for a project this small, but trust me you'll learn a lot using it.
 
 I doubt you'll read it XD, but here's a good link on why gitflow is useful: [gitflow article](https://medium.com/novai-devops-101/understanding-gitflow-a-simple-guide-to-git-branching-strategy-4f079c12edb9)
+
+Also, here is the documentation for your reference: [gitflow documentation](https://github.com/nvie/gitflow)
 
 ### Default Branches
 
