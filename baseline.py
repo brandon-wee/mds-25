@@ -5,7 +5,7 @@ from insightface.app import FaceAnalysis
 
 # Configuration
 KNOWN_FACES_DIR = "known_faces"  # folder containing known face images
-MODEL_NAME = 'buffalo_l'         # InsightFace model pack: 'buffalo_l' (default) or 'buffalo_s' for faster, etc.
+MODEL_NAME = 'buffalo_s'         # InsightFace model pack: 'buffalo_l' (default) or 'buffalo_s' for faster, etc.
 PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']  # GPU if available, else CPU
 
 # Initialize InsightFace model (face detector + recognizer)
