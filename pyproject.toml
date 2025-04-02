@@ -8,4 +8,6 @@ dependencies = [
     "insightface>=0.7.3",
     "ipykernel>=6.29.5",
     "onnxruntime>=1.20.1",
+    "streamlit>=1.44.0",
+    "streamlit-webrtc>=0.53.10",
 ]
