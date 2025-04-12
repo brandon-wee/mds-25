@@ -6,14 +6,13 @@ from insightface.app import FaceAnalysis
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from models import SmallFaceRecognitionTransformer, FaceRecognitionTransformer
 
-
+# Constants
 KNOWN_FACES_DIR = "known_faces"
 MODEL_NAME = "buffalo_l"
 SMALL_MODEL_NAME = "buffalo_s"
 PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
-
-# Set Streamlit theme and page configuration
+# Streamlit Config
 st.set_page_config(
     page_title="AI Surveillance Dashboard",
     page_icon="🛡️",
@@ -22,100 +21,118 @@ st.set_page_config(
 )
 
 # Custom Styling
-st.markdown(
-    """
+st.markdown("""
     <style>
     :root {
         --primary: #2E86C1;
         --secondary: #F4D03F;
         --background: #1B2631;
     }
-    
-    body { 
-        background-color: var(--background); 
+
+    body {
+        background-color: var(--background);
         color: white;
-        font-family: 'Arial', sans-serif;
+        font-family: 'Segoe UI', sans-serif;
     }
-    
-    .title { 
-        text-align: center; 
+
+    .title {
+        text-align: center;
         color: var(--secondary);
-        font-size: 2.5em;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        font-size: 3em;
+        margin-bottom: 0.2em;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
     }
-    
+
+    .subtitle {
+        text-align: center;
+        color: #AED6F1;
+        font-size: 1.5em;
+        margin-top: -10px;
+        margin-bottom: 30px;
+    }
+
     .card {
-        background: rgba(25, 35, 45, 0.9);
-        border-radius: 15px;
+        background: rgba(44, 62, 80, 0.95);
+        border-radius: 16px;
         padding: 2rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
     }
-    
+
     .stButton>button {
         background: linear-gradient(45deg, var(--primary), var(--secondary)) !important;
         color: black !important;
-        border-radius: 8px;
         font-weight: bold;
-        transition: transform 0.2s;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease-in-out;
     }
-    
+
     .stButton>button:hover {
         transform: scale(1.05);
     }
-    
-    .success { color: #2ECC71 !important; }
-    .warning { color: #F1C40F !important; }
-    .error { color: #E74C3C !important; }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-    
-# Sidebar Configuration
-with st.sidebar:
-    st.title("🛡️ MDS25: AI Surveillance")
-    st.markdown("---")
-    st.subheader("Team Members:")
-    st.markdown("""
-    - **Yousuf** 
-    - **Edison** 
-    - **Shadman** 
-    - **Brandon** 
-    """)
-    st.markdown("---")
-    st.markdown("""
-    ### Application Information
-    - **Video Streaming**: streamlit-webrtc
-    """)
-    
-st.markdown("<h1 class='title'>Hybrid Edge-Cloud AI Surveillance</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #85C1E9;'>Real-Time Face Recognition</h3>", unsafe_allow_html=True)
 
+    .footer {
+        text-align: center;
+        color: #7F8C8D;
+        margin-top: 2rem;
+    }
+
+    .footer a {
+        color: #7F8C8D;
+        text-decoration: none;
+    }
+
+    </style>
+""", unsafe_allow_html=True)
+
+# Sidebar
+with st.sidebar:
+    st.title("🛡️ MDS25 Surveillance")
+    st.markdown("---")
+    st.subheader("👥 Team Members")
+    st.markdown("""
+    - **Yousuf**  
+    - **Edison**  
+    - **Shadman**  
+    - **Brandon**
+    """)
+    st.markdown("---")
+    st.subheader("🧾 Info")
+    st.markdown("- **Video Streaming**: streamlit-webrtc")
+    st.markdown("- **Model**: InsightFace (buffalo_l / buffalo_s)")
+
+# Title Section
+st.markdown("<div class='title'>Hybrid Edge-Cloud AI Surveillance</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Real-Time Face Detection & Recognition System</div>", unsafe_allow_html=True)
+
+# Recognition Feed
 st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.subheader("📹 Live Recognition Feed")
+st.subheader("📹 Live Face Recognition Feed (Standard Model)")
 webrtc_streamer(
     key="face-recognition",
-    video_transformer_factory=FaceRecognitionTransformer,
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-    media_stream_constraints={"video": True, "audio": False},
-)
-
-webrtc_streamer(
-    key="small-face-recognition",
-    video_transformer_factory=SmallFaceRecognitionTransformer,
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    video_processor_factory=FaceRecognitionTransformer,
+    frontend_rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     media_stream_constraints={"video": True, "audio": False},
 )
 
 st.markdown("</div>", unsafe_allow_html=True)
 
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("📦 Lightweight Model for Edge Devices")
+webrtc_streamer(
+    key="small-face-recognition",
+    video_processor_factory=SmallFaceRecognitionTransformer,
+    frontend_rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    media_stream_constraints={"video": True, "audio": False},
+)
+st.markdown("</div>", unsafe_allow_html=True)
+
 # Footer
-st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #7F8C8D;">
-    🔒 <strong>AI Surveillance System</strong> | MDS25 | © 2025 | 
-    <a href="#" style="color: #7F8C8D;">Privacy Policy</a>
+<hr>
+<div class="footer">
+    🔒 <strong>AI Surveillance System</strong> | Team MDS25 | © 2025<br>
+    <a href="#">Privacy Policy</a>
 </div>
 """, unsafe_allow_html=True)
