@@ -17,7 +17,7 @@ from insightface.app import FaceAnalysis
 # --------------------------
 KNOWN_FACES_DIR = "known_faces"  # Folder with images named like "Name_..."
 MODEL_LARGE = "buffalo_l"
-MODEL_SMALL = "buffalo_s"
+MODEL_SMALL = "buffalo_sc"
 # Use GPU if available (ensure your onnxruntime-gpu is installed and CUDA is configured)
 PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 EMBEDDINGS_CACHE_DIR = "embeddings_cache"

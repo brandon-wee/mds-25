@@ -9,7 +9,7 @@ from models import SmallFaceRecognitionTransformer, FaceRecognitionTransformer
 # Constants
 KNOWN_FACES_DIR = "known_faces"
 MODEL_NAME = "buffalo_l"
-SMALL_MODEL_NAME = "buffalo_s"
+SMALL_MODEL_NAME = "buffalo_sc"
 PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
 # Streamlit Config
