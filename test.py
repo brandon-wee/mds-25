@@ -22,12 +22,12 @@ MODEL_SMALL = "buffalo_s"
 PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 EMBEDDINGS_CACHE_DIR = "embeddings_cache"
 FACE_DETECTION_SIZE = (320, 320)  # Reduced detection size for faster processing
-PROCESS_EVERY_N_FRAMES = 2  # Process every Nth frame for better performance
+PROCESS_EVERY_N_FRAMES = 1  # Process every Nth frame for better performance
 
 # --------------------------
 # Sidebar: Model Selection & Threshold
 # --------------------------
-st.sidebar.title("Buffalo Face Recognition Comparison")
+st.sidebar.title("Model Size Face Recognition Comparison")
 similarity_threshold = st.sidebar.slider("Similarity Threshold", 0.0, 1.0, 0.3, 0.05)
 process_every_n_frames = st.sidebar.slider("Process every Nth frame", 1, 5, PROCESS_EVERY_N_FRAMES)
 downscale_factor = st.sidebar.slider("Downscale Factor", 1.0, 4.0, 1.5, 0.5)
@@ -50,7 +50,7 @@ with st.sidebar:
     with st.spinner("Loading models..."):
         face_app_large = load_face_analysis(MODEL_LARGE)
         face_app_small = load_face_analysis(MODEL_SMALL)
-    st.success("Models loaded successfully")
+    # st.success("Models loaded successfully")
 
 # --------------------------
 # Cache for Known Face Embeddings
@@ -64,7 +64,7 @@ def compute_and_cache_embeddings(app: FaceAnalysis, model_name: str, directory: 
         try:
             with open(cache_path, 'rb') as f:
                 cache_data = pickle.load(f)
-                st.sidebar.success(f"Loaded {model_name} embeddings from cache")
+                # st.sidebar.success(f"Loaded {model_name} embeddings from cache")
                 return cache_data['embeddings'], cache_data['names']
         except Exception as e:
             st.sidebar.warning(f"Failed to load {model_name} cache: {e}")
@@ -289,7 +289,7 @@ processor_small = FaceRecognitionProcessor(
 # --------------------------
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader("Buffalo Large Model")
+    st.subheader("Baseline Model")
     webrtc_ctx_large = webrtc_streamer(
         key="face-recognition-large",
         mode=WebRtcMode.SENDRECV,
@@ -301,7 +301,7 @@ with col1:
     table_placeholder_large = st.empty()
 
 with col2:
-    st.subheader("Buffalo Small Model")
+    st.subheader("Downsized Model")
     webrtc_ctx_small = webrtc_streamer(
         key="face-recognition-small",
         mode=WebRtcMode.SENDRECV,
