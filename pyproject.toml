@@ -5,8 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "av>=14.3.0",
     "insightface>=0.7.3",
     "ipykernel>=6.29.5",
+    "kagglehub>=0.3.12",
+    "onnx>=1.17.0",
     "onnxruntime>=1.20.1",
-    "streamlit>=1.44.0"
+    "streamlit>=1.44.0",
+    "streamlit-webrtc>=0.62.4",
 ]

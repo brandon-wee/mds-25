@@ -11,15 +11,16 @@ import numpy as np
 import streamlit as st
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from insightface.app import FaceAnalysis
+import onnxruntime as ort
 
 # --------------------------
 # Configuration & Directories
 # --------------------------
 KNOWN_FACES_DIR = "known_faces"  # Folder with images named like "Name_..."
 MODEL_LARGE = "buffalo_l"
-MODEL_SMALL = "buffalo_sc"
+MODEL_SMALL = "buffalo_quantized_dynamic_v1"
 # Use GPU if available (ensure your onnxruntime-gpu is installed and CUDA is configured)
-PROVIDERS = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+PROVIDERS = ['AzureExecutionProvider']
 EMBEDDINGS_CACHE_DIR = "embeddings_cache"
 FACE_DETECTION_SIZE = (320, 320)  # Reduced detection size for faster processing
 PROCESS_EVERY_N_FRAMES = 1  # Process every Nth frame for better performance
