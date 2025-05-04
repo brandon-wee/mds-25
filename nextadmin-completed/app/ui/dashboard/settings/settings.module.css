@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  color: var(--text);
+  font-size: 24px;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background-color: var(--primary, #5555ff);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.section {
+  background-color: var(--bgSoft);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.section h2 {
+  margin-bottom: 20px;
+  color: var(--text);
+  border-bottom: 1px solid var(--bgSoft);
+  padding-bottom: 10px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.formGroup input, 
+.formGroup select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--textSoft);
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.apiKeyGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.apiKeyGroup input {
+  flex: 1;
+  font-family: monospace;
+}
+
+.generateButton {
+  padding: 10px;
+  background-color: var(--bgSoft);
+  color: var(--text);
+  border: 1px solid var(--textSoft);
+  border-radius: 5px;
+  cursor: pointer;
+}

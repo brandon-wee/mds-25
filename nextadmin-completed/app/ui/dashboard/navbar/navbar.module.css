@@ -1,0 +1,146 @@
+.container {
+  padding: 20px;
+  border-radius: 10px;
+  background-color: var(--bgSoft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+  color: var(--text);
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: --bgsoft;
+  border-radius: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.search:focus-within {
+  box-shadow: 0 0 0 2px rgba(93, 87, 201, 0.5);
+}
+
+.input {
+  background-color: transparent;
+  border: none;
+  color: var(--text);
+  outline: none;
+  min-width: 150px;
+}
+
+.icons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.icon {
+  color: var(--textSoft);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.icon:hover {
+  color: var(--primary, #5555ff);
+}
+
+.icons > * {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.icons > *:hover {
+  color: #5d57c9;
+}
+
+/* For any notification badges */
+.notification {
+  position: relative;
+}
+
+.badge {
+  background-color: var(--primary, #5555ff);
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+
+.notificationsPanel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: var(--bgSoft);
+  color: var(--text);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.notification {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.notification:last-child {
+  border-bottom: none;
+}
+
+.notification p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.notification small {
+  color: var(--textSoft);
+  font-size: 0.8rem;
+}
+
+.closeNotif {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.closeNotif:hover {
+  opacity: 1;
+}
+
+.themeIcon {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.themeIcon:hover {
+  transform: rotate(30deg);
+}

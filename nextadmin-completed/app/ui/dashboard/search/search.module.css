@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: --bgSoft;
+  border-radius: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border-color: blueviolet;
+  width: max-content;
+}
+
+.input {
+  background-color: transparent;
+  border: none;
+  color: var(--text);
+  outline: none;
+}

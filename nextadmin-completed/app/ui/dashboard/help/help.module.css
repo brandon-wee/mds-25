@@ -1,0 +1,169 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.title {
+  color: var(--text);
+  font-size: 28px;
+}
+
+.searchContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background-color: var(--bgSoft);
+  border-radius: 10px;
+  padding: 5px 15px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.searchIcon {
+  font-size: 20px;
+  color: var(--textSoft);
+  margin-right: 10px;
+}
+
+.searchBox input {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  outline: none;
+  font-size: 16px;
+}
+
+.searchButton {
+  padding: 10px 20px;
+  background-color: var(--primary, #5555ff);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.categories {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.category {
+  padding: 10px 20px;
+  background-color: var(--bgSoft);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text);
+}
+
+.category:hover {
+  background-color: var(--primary, #5555ff);
+  color: white;
+}
+
+.faqSection {
+  margin-bottom: 30px;
+}
+
+.faqSection h2 {
+  margin-bottom: 20px;
+  color: var(--text);
+  font-size: 22px;
+}
+
+.faqs {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.faqItem {
+  background-color: var(--bgSoft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.faqQuestion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+}
+
+.faqQuestion h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.expandIcon {
+  font-size: 24px;
+  color: var(--textSoft);
+}
+
+.faqAnswer {
+  padding: 0 20px 15px 20px;
+  color: var(--textSoft);
+  line-height: 1.5;
+}
+
+.supportSection {
+  text-align: center;
+  padding: 30px;
+  background-color: var(--bgSoft);
+  border-radius: 10px;
+}
+
+.supportSection h2 {
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.supportSection p {
+  color: var(--textSoft);
+  margin-bottom: 20px;
+}
+
+.supportOptions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.supportButton {
+  padding: 12px 24px;
+  background-color: var(--primary, #5555ff);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.docsButton {
+  padding: 12px 24px;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--textSoft);
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
