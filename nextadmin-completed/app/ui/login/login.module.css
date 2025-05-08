@@ -6,61 +6,33 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
-  background-size: 600% 600%;
-  animation: gradientAnimation 15s ease infinite;
+  background: linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e);
+}
+
+/* Ensure the form stays on top of the animation */
+.container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Style adjustments for the canvas */
+.container canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Add this to your existing styles */
+.fallbackBackground {
+  background: linear-gradient(135deg, #10101a 0%, #3a3a5c 100%);
+  background-size: 200% 200%;
+  animation: gradientAnimation 10s ease infinite;
 }
 
 @keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
-
-/* Animated circles */
-.container::before,
-.container::after {
-  content: "";
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 10s infinite ease-in-out;
-}
-
-.container::before {
-  top: -150px;
-  left: -150px;
-  animation-delay: 0s;
-}
-
-.container::after {
-  bottom: -150px;
-  right: -150px;
-  width: 200px;
-  height: 200px;
-  animation-delay: 2s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-  }
-  25% {
-    transform: translateY(50px) translateX(50px);
-  }
-  50% {
-    transform: translateY(0) translateX(100px);
-  }
-  75% {
-    transform: translateY(-50px) translateX(50px);
-  }
-}
-
