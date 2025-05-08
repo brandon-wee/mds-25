@@ -53,6 +53,9 @@ const LoginForm = () => {
           className={state ? styles.errorInput : ""}
         />
       </div>
+      <div className={styles.forgotPassword}>
+        <a href="/reset-password">Forgot Password?</a>
+      </div>
       <button 
         type="submit" 
         disabled={isLoading || !username || !password}
