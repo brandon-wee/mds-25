@@ -1,8 +1,9 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .header {
@@ -10,11 +11,16 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 128, 128, 0.2);
 }
 
 .title {
   color: var(--text);
-  font-size: 24px;
+  font-size: 28px;
+  margin-bottom: 8px;
+  position: relative;
 }
 
 .summary {
@@ -22,51 +28,171 @@
   color: var(--textSoft);
 }
 
-.charts {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.chart {
-  padding: 20px;
+.videoSection {
   background-color: var(--bgSoft);
   border-radius: 10px;
-  height: 400px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.chartPlaceholder {
+.videoSection h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.videoContainer {
+  position: relative;
   width: 100%;
-  height: 300px;
+  height: 400px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.videoFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.videoLoader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed var(--textSoft);
-  border-radius: 5px;
-  color: var(--textSoft);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
   font-size: 18px;
 }
 
-.stats {
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+.chartContainer {
+  background-color: var(--bgSoft);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.chartContainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.chartContainer h2 {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.chart {
+  height: 250px;
+  width: 100%;
+}
+
+.chartPlaceholder {
+  height: 300px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--textSoft);
+  border-radius: 6px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  justify-content: space-between;
+  margin-top: 10px;
 }
 
 .statBox {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   background-color: var(--bgSoft);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  position: relative;
+  overflow: hidden;
+}
+
+.statBox:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.statBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, teal, rgba(0, 128, 128, 0.2));
+}
+
+.statIcon {
+  font-size: 24px;
+  color: teal;
+  margin-bottom: 10px;
 }
 
 .statNumber {
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 600;
   color: var(--text);
   margin-top: 10px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .charts {
+    grid-template-columns: 1fr;
+  }
+  
+  .videoContainer {
+    height: 250px;
+  }
+  
+  .stats {
+    grid-template-columns: 1fr;
+  }
 }
