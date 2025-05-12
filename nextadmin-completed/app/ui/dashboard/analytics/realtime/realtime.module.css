@@ -172,6 +172,64 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.apiStatus {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.connected {
+  color: #4caf50;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.disconnected {
+  color: #f44336;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.simulating {
+  color: #ff9800;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.spinningIcon {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.debugInfo {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.simulatedTag {
+  font-size: 10px;
+  padding: 2px 5px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 10px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
