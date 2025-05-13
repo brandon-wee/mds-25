@@ -69,7 +69,6 @@ export const updateUser = async (formData) => {
   redirect("/dashboard/users");
 };
 
-
 export const deleteUser = async (formData) => {
   const { id } = Object.fromEntries(formData);
 
@@ -162,5 +161,60 @@ export const authenticate = async (prevState, formData) => {
       return "Wrong Credentials";
     }
     throw err;
+  }
+};
+
+export const updateUserEmbeddings = async (formData) => {
+  const { userId, images } = Object.fromEntries(formData);
+
+  try {
+    connectToDB();
+
+    // In a real implementation:
+    // 1. Temporarily store the images or convert to Base64
+    // 2. Send images to your FastAPI backend
+    // 3. Receive embeddings from FastAPI
+    // 4. Update user record with embeddings
+
+    // This is a placeholder for the FastAPI call
+    // Replace with actual API call when you set up FastAPI
+    const response = await fetch("YOUR_FASTAPI_ENDPOINT", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ 
+        userId, 
+        images: Array.from(images).map(img => img.name) // In real implementation, send actual image data
+      }),
+    });
+
+    const data = await response.json();
+    
+    // Update user with received embeddings
+    // In a real scenario, this would be the embedding data from your FastAPI
+    const mockEmbeddings = [0.1, 0.2, 0.3, 0.4, 0.5]; // Replace with actual embeddings
+    
+    await User.findByIdAndUpdate(userId, {
+      embeddings: mockEmbeddings, // or data.embeddings from your API
+      faceId: `face_${userId}`, // Generate a face ID or get from API
+    });
+
+    revalidatePath("/dashboard/embeddings");
+    return { success: true, message: "Embeddings updated successfully" };
+  } catch (err) {
+    console.error(err);
+    return { success: false, message: "Failed to update embeddings" };
+  }
+};
+
+export const findUserByUsername = async (username) => {
+  try {
+    connectToDB();
+    const user = await User.findOne({ username: username });
+    return user;
+  } catch (err) {
+    console.error(err);
+    throw new Error("Failed to find user");
   }
 };

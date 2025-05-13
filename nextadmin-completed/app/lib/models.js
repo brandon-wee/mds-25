@@ -35,6 +35,15 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    embeddings: {
+      type: Array,
+      default: [],
+    },
+    faceId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );

@@ -11,6 +11,7 @@ import {
   MdHelpCenter,
   MdLogout,
   MdOutlineCategory,
+  MdFace,
 } from "react-icons/md";
 import { auth, signOut } from "@/app/auth";
 
@@ -72,6 +73,16 @@ const menuItems = [
         title: "Help",
         path: "/dashboard/help",
         icon: <MdHelpCenter />,
+      },
+    ],
+  },
+  {
+    title: "User Embeddings",
+    list: [
+      {
+        title: "Embeddings",
+        path: "/dashboard/embeddings",
+        icon: <MdFace />,
       },
     ],
   },
