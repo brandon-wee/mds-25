@@ -13,7 +13,7 @@ import {
   MdOutlineCategory,
   MdFace,
 } from "react-icons/md";
-import { auth, signOut } from "@/app/auth";
+import { auth } from "@/app/auth"; // Removed signOut import as we're not using it
 
 const menuItems = [
   {
@@ -59,6 +59,11 @@ const menuItems = [
         path: "/dashboard/people",
         icon: <MdPeople />,
       },
+      {
+        title: "Embeddings",
+        path: "/dashboard/embeddings",
+        icon: <MdFace />,
+      },
     ],
   },
   {
@@ -74,15 +79,10 @@ const menuItems = [
         path: "/dashboard/help",
         icon: <MdHelpCenter />,
       },
-    ],
-  },
-  {
-    title: "User Embeddings",
-    list: [
       {
-        title: "Embeddings",
-        path: "/dashboard/embeddings",
-        icon: <MdFace />,
+        title: "Logout",
+        path: "/login", // Navigate to login page instead
+        icon: <MdLogout />,
       },
     ],
   },
@@ -115,6 +115,7 @@ const Sidebar = async () => {
           </li>
         ))}
       </ul>
+      {/* Server-side logout action commented out
       <form
         action={async () => {
           "use server";
@@ -126,6 +127,7 @@ const Sidebar = async () => {
           Logout
         </button>
       </form>
+      */}
     </div>
   );
 };

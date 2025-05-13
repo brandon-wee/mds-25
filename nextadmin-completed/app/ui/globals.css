@@ -59,18 +59,29 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.25;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.75em;
+  color: var(--text);
 }
 
 p {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  color: var(--textSoft);
 }
 
 /* Links */
 a {
-  color: inherit;
+  color: var(--text);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+a:hover {
+  color: var(--secondary);
+}
+
+a:active {
+  transform: translateY(1px);
 }
 
 /* Lists */
@@ -81,12 +92,13 @@ ul, ol {
 
 /* Forms */
 input, button, textarea, select {
-  font: inherit;
+  font-family: inherit;
+  font-size: 1rem;
   color: inherit;
   background-color: var(--bgSoft);
   border: 1px solid var(--border);
   border-radius: var(--borderRadius);
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 1rem;
   transition: var(--transition);
 }
 
