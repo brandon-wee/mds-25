@@ -31,6 +31,12 @@
   font-weight: 300;
 }
 
+.subText {
+  font-size: 14px;
+  color: var(--textSoft);
+  margin-bottom: 5px;
+}
+
 .positive {
   color: lime;
 }

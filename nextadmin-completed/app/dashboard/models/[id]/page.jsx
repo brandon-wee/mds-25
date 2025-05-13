@@ -8,10 +8,13 @@ const SingleModelPage = async ({ params }) => {
   const model = await fetchModel(id)
 
   return (
-    <div className={styles.container}>
-      <div className={styles.infoContainer}>
+    <div className={styles.container}>      <div className={styles.infoContainer}>
         <div className={styles.imgContainer}>
-          <Image src="/noavatar.png" alt="" fill />
+          <Image 
+            src={model.edgeDevice === "nicla" ? "/arduino-icon.png" : "/raspberry-icon.png"}
+            alt={model.edgeDevice === "nicla" ? "Arduino Nicla" : "Raspberry Pi"}
+            fill 
+          />
         </div>
         <h1 className={styles.title}>{model.title}</h1>
         <div className={styles.detail}>

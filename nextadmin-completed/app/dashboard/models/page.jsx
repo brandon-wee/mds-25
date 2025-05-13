@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import styles from "@/app/ui/dashboard/models/models.module.css"; // Reusing the same styles
+import styles from "@/app/ui/dashboard/models/models.module.css"; 
 import Search from "@/app/ui/dashboard/search/search";
 import Pagination from "@/app/ui/dashboard/pagination/pagination";
 import { fetchModels } from "@/app/lib/data";
@@ -33,12 +33,11 @@ const ModelsPage = async ({ searchParams }) => {
         </thead>
         <tbody>
           {models.map((model) => (
-            <tr key={model.id}>
-              <td>
+            <tr key={model.id}>              <td>
                 <div className={styles.product}>
                   <Image
-                    src="/noavatar.png"
-                    alt=""
+                    src={model.edgeDevice === "nicla" ? "/arduino-icon.png" : "/raspberry-icon.png"}
+                    alt={model.edgeDevice === "nicla" ? "Arduino Nicla" : "Raspberry Pi"}
                     width={40}
                     height={40}
                     className={styles.productImage}
