@@ -11,6 +11,12 @@ dependencies = [
     "kagglehub>=0.3.12",
     "onnx>=1.17.0",
     "onnxruntime>=1.20.1",
+    "opencv-python>=4.11.0.86",
     "streamlit>=1.44.0",
     "streamlit-webrtc>=0.62.4",
+    "torch>=2.7.0",
+    "torchaudio>=2.7.0",
+    "torchvision>=0.22.0",
+    "tqdm>=4.67.1",
+    "yolov5>=7.0.14",
 ]
