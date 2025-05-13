@@ -248,10 +248,50 @@ const RealTimeDataPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Stats section above the video */}
+      <div className={styles.statsRow}>
+        <div className={styles.statBox}>
+          <MdPeopleAlt className={styles.statIcon} />
+          <h3>People Count</h3>
+          <span className={styles.statNumber}>{metaData.people_count || 0}</span>
+          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
+        </div>
+        <div className={styles.statBox}>
+          <MdSpeed className={styles.statIcon} />
+          <h3>Current FPS</h3>
+          <span className={styles.statNumber}>{metaData.fps || 0}</span>
+          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
+        </div>
+        <div className={styles.statBox}>
+          <MdFace className={styles.statIcon} />
+          <h3>Similarity Score</h3>
+          <span className={styles.statNumber}>{metaData.best_sim?.toFixed(2) || 0}</span>
+          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
+        </div>
+        <div className={styles.statBox}>
+          <h2><MdPeopleAlt /> Recognized People</h2>
+          <div className={styles.namesList}>
+            {metaData.names && metaData.names.length > 0 ? (
+              <ul className={styles.nameList}>
+                {metaData.names.map((name, index) => (
+                  <li key={index} className={styles.nameItem}>
+                    <span className={styles.nameLabel}>Person {index+1}:</span> {name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className={styles.noData}>No one recognized</span>
+            )}
+          </div>
+        </div>
+        {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
+      </div>
       
+      {/* Video container */}
       <div className={styles.videoSection}>
         <h2><MdVideocam /> Live Video Feed</h2>
-        <div className={styles.videoContainer}>
+        <div className={styles.videoContainer} style={{height: '340px'}}>
           {isVideoLoading && <div className={styles.videoLoader}>Loading video stream...</div>}
           <img 
             src={`${API_BASE_URL}/video_feed`} 
@@ -271,163 +311,116 @@ const RealTimeDataPage = () => {
           </div>
         )}
       </div>
-
-      <div className={styles.charts}>
-        {/* First row of charts - two side by side */}
-        <div className={styles.chartRow}>
-          <div className={styles.chartContainer}>
-            <h2><MdPeopleAlt /> People Count</h2>
-            <div className={styles.chart}>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={peopleCountHistory}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis domain={[0, 'auto']} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(0, 128, 128, 0.8)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: 'white'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="count" 
-                    stroke="#00CED1" 
-                    strokeWidth={2}
-                    activeDot={{ r: 8 }}
-                    isAnimationActive={true}
-                    animationDuration={2000} // Slower animation (increased from 800ms)
-                    animationEasing="ease-in-out"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className={styles.chartContainer}>
-            <h2><MdSpeed /> Frames Per Second</h2>
-            <div className={styles.chart}>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={fpsHistory}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis domain={[0, 'auto']} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(0, 128, 128, 0.8)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: 'white'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="fps" 
-                    stroke="#20B2AA" 
-                    strokeWidth={2}
-                    activeDot={{ r: 8 }}
-                    isAnimationActive={true}
-                    animationDuration={2000} // Slower animation (increased from 800ms)
-                    animationEasing="ease-in-out"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+      
+      {/* People count chart and Similarity chart side by side */}
+      <div className={styles.chartsRow}>
+        {/* People Count Chart */}
+        <div className={styles.chartContainer} style={{flex: 1}}>
+          <h2><MdPeopleAlt /> People Count</h2>
+          <div className={styles.chart}>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart
+                data={peopleCountHistory}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis domain={[0, 'auto']} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgba(0, 128, 128, 0.8)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: 'white'
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="count" 
+                  stroke="#00CED1" 
+                  strokeWidth={2}
+                  activeDot={{ r: 8 }}
+                  isAnimationActive={true}
+                  animationDuration={2000}
+                  animationEasing="ease-in-out"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
-        
-        {/* Second row - similarity chart full width */}
-        <div className={styles.chartRow}>
-          <div className={styles.chartContainer} style={{width: '100%'}}>
-            <h2><MdFace /> Face Recognition Similarity</h2>
-            <div className={styles.chart}>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={similarityHistory}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis domain={[0, 1]} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(0, 128, 128, 0.8)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: 'white'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="similarity" 
-                    name="Face Similarity" 
-                    stroke="#FF8C00" 
-                    strokeWidth={2}
-                    activeDot={{ r: 8 }}
-                    isAnimationActive={true}
-                    animationDuration={2000}
-                    animationEasing="ease-in-out"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+
+        {/* Similarity Chart */}
+        <div className={styles.chartContainer} style={{flex: 1}}>
+          <h2><MdFace /> Face Recognition Similarity</h2>
+          <div className={styles.chart}>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart
+                data={similarityHistory}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis domain={[0, 1]} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgba(0, 128, 128, 0.8)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: 'white'
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="similarity" 
+                  name="Face Similarity" 
+                  stroke="#FF8C00" 
+                  strokeWidth={2}
+                  activeDot={{ r: 8 }}
+                  isAnimationActive={true}
+                  animationDuration={2000}
+                  animationEasing="ease-in-out"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
-
-      <div className={styles.stats}>
-        <div className={styles.statBox}>
-          <MdPeopleAlt className={styles.statIcon} />
-          <h3>People Count</h3>
-          <span className={styles.statNumber}>{metaData.people_count || 0}</span>
-          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
-        </div>
-        <div className={styles.statBox}>
-          <MdSpeed className={styles.statIcon} />
-          <h3>Current FPS</h3>
-          <span className={styles.statNumber}>{metaData.fps || 0}</span>
-          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
-        </div>
-        <div className={styles.statBox}>
-          <MdWarning className={styles.statIcon} />
-          <h3>Alerts</h3>
-          <span className={styles.statNumber}>{metaData.alerts || 0}</span>
-          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
-        </div>
-        <div className={styles.statBox}>
-          <MdFace className={styles.statIcon} />
-          <h3>Similarity Score</h3>
-          <span className={styles.statNumber}>{metaData.best_sim?.toFixed(2) || 0}</span>
-          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
-        </div>
-        <div className={styles.statBox} style={{width: '100%', maxWidth: '600px'}}>
-          <MdPeopleAlt className={styles.statIcon} />
-          <h3>Recognized People</h3>
-          <div className={styles.namesList}>
-            {metaData.names && metaData.names.length > 0 ? (
-              <ul className={styles.nameList}>
-                {metaData.names.map((name, index) => (
-                  <li key={index} className={styles.nameItem}>
-                    <span className={styles.nameLabel}>Person {index+1}:</span> {name}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <span className={styles.noData}>No one recognized</span>
-            )}
-          </div>
-          {isSimulating && <span className={styles.simulatedTag}>Simulated</span>}
+      
+      {/* FPS chart at the bottom center */}
+      <div className={styles.chartContainer} style={{width: '60%', margin: '0 auto'}}>
+        <h2><MdSpeed /> Frames Per Second</h2>
+        <div className={styles.chart}>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart
+              data={fpsHistory}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" />
+              <YAxis domain={[0, 'auto']} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(0, 128, 128, 0.8)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  color: 'white'
+                }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="fps" 
+                stroke="#20B2AA" 
+                strokeWidth={2}
+                activeDot={{ r: 8 }}
+                isAnimationActive={true}
+                animationDuration={2000}
+                animationEasing="ease-in-out"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
