@@ -8,47 +8,55 @@ const userSchema = new mongoose.Schema(
       unique: true,
       min: 3,
       max: 20,
+      trim: true
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true
     },
     password: {
       type: String,
       required: true,
-      select: true, // Ensure password is always selected
+      select: true
     },
     img: {
       type: String,
+      default: null
     },
     isAdmin: {
       type: Boolean,
-      default: false,
+      default: false
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: true
     },
     phone: {
       type: String,
+      default: null,
+      trim: true
     },
     address: {
       type: String,
+      default: null,
+      trim: true
     },
     embeddings: {
-      type: Array,
-      default: [],
+      type: [Number], // or whatever type your embeddings are
+      default: null
     },
     faceId: {
       type: String,
       unique: true,
       sparse: true,
-    },
+      default: null
+    }
   },
   { timestamps: true }
 );
-
 // Add a debug method to show all fields including password
 userSchema.methods.toDebugJSON = function() {
   const obj = this.toObject();

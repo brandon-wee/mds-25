@@ -238,3 +238,73 @@ export const findUserByUsername = async (username) => {
     throw new Error("Failed to find user");
   }
 };
+
+export const registerUser = async (formData) => {
+  const { username, email, password } = Object.fromEntries(formData);
+  
+  console.log(`[ACTIONS DEBUG] Registration attempt for user: ${username}`);
+  
+  try {
+    await connectToDB();
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      $or: [{ username: username }, { email: email }],
+    });
+    
+    if (existingUser) {
+      console.log("[ACTIONS DEBUG] User already exists");
+      return { 
+        success: false, 
+        message: existingUser.username === username 
+          ? "Username already taken" 
+          : "Email already registered" 
+      };
+    }
+    
+    // Create new user
+    const newUser = new User({
+      username,
+      email,
+      password,
+      isAdmin: false,
+      isActive: true
+    });
+    
+    await newUser.save();
+    
+    console.log("[ACTIONS DEBUG] User registered successfully");
+    return { success: true };
+  } catch (err) {
+    console.error("[ACTIONS ERROR]", err);
+    return { success: false, message: "Failed to register: " + err.message };
+  }
+};
+
+export const resetPassword = async (formData) => {
+  const { email, newPassword } = Object.fromEntries(formData);
+  
+  console.log(`[ACTIONS DEBUG] Password reset attempt for email: ${email}`);
+  
+  try {
+    await connectToDB();
+    
+    // Find user by email
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      console.log("[ACTIONS DEBUG] User not found for password reset");
+      return { success: false, message: "No account found with this email" };
+    }
+    
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    console.log("[ACTIONS DEBUG] Password reset successful");
+    return { success: true };
+  } catch (err) {
+    console.error("[ACTIONS ERROR]", err);
+    return { success: false, message: "Failed to reset password: " + err.message };
+  }
+};

@@ -5,6 +5,7 @@ import styles from "./loginForm.module.css";
 import { useFormState } from "react-dom";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const LoginForm = () => {
   // Initialize with undefined, not a function call result
@@ -78,7 +79,7 @@ const LoginForm = () => {
         />
       </div>
       <div className={styles.forgotPassword}>
-        <a href="/reset-password">Forgot Password?</a>
+        <Link href="/reset-password">Forgot Password?</Link>
       </div>
       <button 
         type="submit" 
@@ -88,25 +89,9 @@ const LoginForm = () => {
         {isLoading ? "Logging in..." : "Login"}
       </button>
       {error && <div className={styles.error}>{error}</div>}
-      
-      {/* Debug info */}
-      {process.env.NODE_ENV !== 'production' && (
-        <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-          <div>State: {JSON.stringify(state)}</div>
-          <button 
-            type="button" 
-            onClick={() => {
-              console.log("Current state:", state);
-              if (state?.success) {
-                router.push("/dashboard");
-              }
-            }}
-            style={{ fontSize: '10px', padding: '2px', marginTop: '5px' }}
-          >
-            Force Redirect
-          </button>
-        </div>
-      )}
+      <div className={styles.registerPrompt}>
+        Don't have an account? <Link href="/register">Register Now</Link>
+      </div>
     </form>
   );
 };
