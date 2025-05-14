@@ -4,7 +4,7 @@ import { authenticate } from "@/app/lib/actions";
 import styles from "./loginForm.module.css";
 import { useFormState } from "react-dom";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const LoginForm = () => {
@@ -14,14 +14,31 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Check for success messages from redirects
+  useEffect(() => {
+    if (searchParams.has('registered')) {
+      setSuccess("Registration successful! Please log in.");
+      setTimeout(() => setSuccess(""), 5000);
+    } else if (searchParams.has('reset')) {
+      setSuccess("Password reset successful! Please log in with your new password.");
+      setTimeout(() => setSuccess(""), 5000);
+    }
+  }, [searchParams]);
   
   // Add effect to handle state changes from the server action
   useEffect(() => {
     console.log("Current form state:", state);
     if (state?.success) {
       console.log("Login successful from useEffect, redirecting to dashboard");
-      router.push("/dashboard");
+      // Show success animation/message before redirecting
+      setSuccess("Login successful! Redirecting...");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 800);
     } else if (state && typeof state === "string") {
       setError(state);
     }
@@ -53,11 +70,11 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      <h1>Login</h1>
+      <h1>Sign In</h1>
       <div className={styles.inputContainer}>
         <input 
           type="text" 
-          placeholder="Username" 
+          placeholder="Username or Email" 
           name="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -86,11 +103,12 @@ const LoginForm = () => {
         disabled={isLoading || !username || !password}
         className={isLoading ? styles.loadingButton : ""}
       >
-        {isLoading ? "Logging in..." : "Login"}
+        {isLoading ? "Authenticating..." : "Log In"}
       </button>
       {error && <div className={styles.error}>{error}</div>}
+      {success && <div className={styles.success}>{success}</div>}
       <div className={styles.registerPrompt}>
-        Don't have an account? <Link href="/register">Register Now</Link>
+        New here? <Link href="/register">Create an Account</Link>
       </div>
     </form>
   );

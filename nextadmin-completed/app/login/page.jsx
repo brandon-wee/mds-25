@@ -7,6 +7,7 @@ import LoginForm from "../ui/login/loginForm/loginForm";
 
 const LoginPage = () => {
   const vantaRef = useRef(null);
+  const vantaEffectRef = useRef(null);
   const [scriptsLoaded, setScriptsLoaded] = useState({
     three: false,
     vanta: false
@@ -14,12 +15,14 @@ const LoginPage = () => {
   const [backgroundInitialized, setBackgroundInitialized] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
 
-  // Initialize VANTA effect once both scripts are loaded
-  useEffect(() => {
-    if (scriptsLoaded.three && scriptsLoaded.vanta && vantaRef.current && !backgroundInitialized) {
-      try {
-        // Access VANTA from window object after scripts load
-        window.VANTA.NET({
+  // Function to initialize VANTA effect
+  const initVantaEffect = () => {
+    if (!vantaRef.current || vantaEffectRef.current) return;
+    
+    try {
+      // Check if VANTA is available in the window object
+      if (window.VANTA && window.VANTA.NET) {
+        vantaEffectRef.current = window.VANTA.NET({
           el: vantaRef.current,
           mouseControls: true,
           touchControls: true,
@@ -34,31 +37,57 @@ const LoginPage = () => {
           spacing: 19.00
         });
         setBackgroundInitialized(true);
-      } catch (error) {
-        console.error("Error initializing VANTA effect:", error);
       }
+    } catch (error) {
+      console.error("Error initializing VANTA effect:", error);
     }
+  };
 
+  // Initialize VANTA effect once both scripts are loaded
+  useEffect(() => {
+    // If scripts are already loaded in the browser (from cache), initialize immediately
+    if (window.THREE && window.VANTA && !vantaEffectRef.current) {
+      setScriptsLoaded({ three: true, vanta: true });
+      initVantaEffect();
+    }
+    
     // Add a debug utility function
     window.showLoginDebug = () => {
       const cookies = document.cookie.split(';').map(c => c.trim());
       setDebugInfo(`Cookies: ${cookies.join(', ')}`);
     };
 
-  }, [scriptsLoaded, backgroundInitialized]);
+    // Cleanup function that runs when component unmounts
+    return () => {
+      if (vantaEffectRef.current) {
+        vantaEffectRef.current.destroy();
+        vantaEffectRef.current = null;
+        setBackgroundInitialized(false);
+      }
+    };
+  }, []);
+
+  // Effect to initialize VANTA when scripts load
+  useEffect(() => {
+    if (scriptsLoaded.three && scriptsLoaded.vanta) {
+      initVantaEffect();
+    }
+  }, [scriptsLoaded]);
 
   return (
     <>
-      {/* Load Three.js from CDN */}
+      {/* Load Three.js from CDN with afterInteractive strategy */}
       <Script 
         src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"
+        strategy="afterInteractive"
         onLoad={() => setScriptsLoaded(prev => ({ ...prev, three: true }))}
         onError={() => console.error("Failed to load Three.js")}
       />
       
-      {/* Load VANTA.js from CDN */}
+      {/* Load VANTA.js from CDN with afterInteractive strategy */}
       <Script 
         src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"
+        strategy="afterInteractive"
         onLoad={() => setScriptsLoaded(prev => ({ ...prev, vanta: true }))}
         onError={() => console.error("Failed to load VANTA.js")}
       />
