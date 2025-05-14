@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { User, Models } from "./models";
 import { connectToDB } from "./utils";
 import { redirect } from "next/navigation";
-import bcrypt from "bcrypt";
-import { signIn } from "@/app/auth";
+import { cookies } from 'next/headers';
+import { loginUser } from './auth';
 
 export const addUser = async (formData) => {
   const { username, email, password, phone, address, isAdmin, isActive } =
@@ -14,13 +14,11 @@ export const addUser = async (formData) => {
   try {
     connectToDB();
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    // No more bcrypt hashing - store password as plain text
     const newUser = new User({
       username,
       email,
-      password: hashedPassword,
+      password, // Store password as plain text
       phone,
       address,
       isAdmin,
@@ -153,14 +151,36 @@ export const deleteModel = async (formData) => {
 
 export const authenticate = async (prevState, formData) => {
   const { username, password } = Object.fromEntries(formData);
-
-  try {
-    await signIn("credentials", { username, password });
-  } catch (err) {
-    if (err.message.includes("CredentialsSignin")) {
-      return "Wrong Credentials";
-    }
-    throw err;
+  
+  console.log(`[ACTIONS DEBUG] Authentication attempt for user: ${username}`);
+  
+  const result = await loginUser({ username, password });
+  console.log(`[ACTIONS DEBUG] Login result:`, { 
+    success: result.success, 
+    message: result.message || 'No message', 
+    hasToken: !!result.token 
+  });
+  
+  if (result.success) {
+    // Set the auth token cookie
+    cookies().set({
+      name: 'auth-token',
+      value: result.token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      // 7 days in seconds
+      maxAge: 60 * 60 * 24 * 7
+    });
+    
+    console.log("[ACTIONS DEBUG] Auth cookie set successfully");
+    // Return an object with just the success property to avoid serialization issues
+    return { success: true };
+  } else {
+    console.log("[ACTIONS DEBUG] Authentication failed:", result.message);
+    // Return just the error message as a string
+    return result.message || "Wrong Credentials";
   }
 };
 

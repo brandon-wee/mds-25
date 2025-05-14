@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import MenuLink from "./menuLink/menuLink";
 import styles from "./sidebar.module.css";
@@ -13,7 +15,8 @@ import {
   MdOutlineCategory,
   MdFace,
 } from "react-icons/md";
-import { auth } from "@/app/auth"; // Removed signOut import as we're not using it
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const menuItems = [
   {
@@ -79,17 +82,45 @@ const menuItems = [
         path: "/dashboard/help",
         icon: <MdHelpCenter />,
       },
-      {
-        title: "Logout",
-        path: "/login", // Navigate to login page instead
-        icon: <MdLogout />,
-      },
     ],
   },
 ];
 
-const Sidebar = async () => {
-  const { user } = await auth();
+const Sidebar = () => {
+  const router = useRouter();
+  const [user, setUser] = useState({
+    username: "Admin User",
+    img: null
+  });
+  
+  // Simple logout handler
+  const handleLogout = () => {
+    document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    router.push("/login");
+  };
+  
+  // Try to parse user info from cookie on client side
+  useEffect(() => {
+    try {
+      const cookies = document.cookie.split(';');
+      const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth-token='));
+      
+      if (authCookie) {
+        const token = authCookie.split('=')[1];
+        const decoded = JSON.parse(atob(token));
+        
+        if (decoded && decoded.username) {
+          setUser({
+            username: decoded.username,
+            img: decoded.img || null
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing user from cookie:", error);
+    }
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.user}>
@@ -115,19 +146,10 @@ const Sidebar = async () => {
           </li>
         ))}
       </ul>
-      {/* Server-side logout action commented out
-      <form
-        action={async () => {
-          "use server";
-          await signOut();
-        }}
-      >
-        <button className={styles.logout}>
-          <MdLogout />
-          Logout
-        </button>
-      </form>
-      */}
+      <button onClick={handleLogout} className={styles.logout}>
+        <MdLogout />
+        Logout
+      </button>
     </div>
   );
 };

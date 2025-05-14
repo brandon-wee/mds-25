@@ -12,6 +12,7 @@ const LoginPage = () => {
     vanta: false
   });
   const [backgroundInitialized, setBackgroundInitialized] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
 
   // Initialize VANTA effect once both scripts are loaded
   useEffect(() => {
@@ -37,6 +38,13 @@ const LoginPage = () => {
         console.error("Error initializing VANTA effect:", error);
       }
     }
+
+    // Add a debug utility function
+    window.showLoginDebug = () => {
+      const cookies = document.cookie.split(';').map(c => c.trim());
+      setDebugInfo(`Cookies: ${cookies.join(', ')}`);
+    };
+
   }, [scriptsLoaded, backgroundInitialized]);
 
   return (
@@ -60,6 +68,14 @@ const LoginPage = () => {
         ref={vantaRef}
       >
         <LoginForm />
+        
+        {/* Debug button (hidden in production) */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 1000 }}>
+            <button onClick={() => window.showLoginDebug()}>Debug</button>
+            {debugInfo && <pre style={{ background: '#fff', padding: '10px' }}>{debugInfo}</pre>}
+          </div>
+        )}
       </div>
     </>
   );

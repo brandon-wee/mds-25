@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: true, // Ensure password is always selected
     },
     img: {
       type: String,
@@ -47,6 +48,12 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Add a debug method to show all fields including password
+userSchema.methods.toDebugJSON = function() {
+  const obj = this.toObject();
+  return obj;
+};
 
 const modelSchema = new mongoose.Schema(
   {
