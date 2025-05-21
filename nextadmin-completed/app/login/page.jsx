@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import styles from "@/app/ui/login/login.module.css";
 import LoginForm from "../ui/login/loginForm/loginForm";
+import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
   const vantaRef = useRef(null);
@@ -14,7 +15,9 @@ const LoginPage = () => {
   });
   const [backgroundInitialized, setBackgroundInitialized] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
-
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Function to initialize VANTA effect
   const initVantaEffect = () => {
     if (!vantaRef.current || vantaEffectRef.current) return;
@@ -74,6 +77,39 @@ const LoginPage = () => {
     }
   }, [scriptsLoaded]);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    console.log("[LOGIN PAGE] Checking if user is already logged in");
+    
+    const checkAuthentication = () => {
+      // Check localStorage
+      const username = localStorage.getItem('username');
+      
+      // Check cookies
+      const hasAuthCookie = document.cookie.includes('auth-token=');
+      
+      // Determine auth status
+      const isLoggedIn = 
+        (username && username !== 'Guest' && username !== 'null') || 
+        hasAuthCookie;
+      
+      console.log("[LOGIN PAGE] Auth check:", { isLoggedIn, username, hasAuthCookie });
+      
+      if (isLoggedIn) {
+        console.log("[LOGIN PAGE] Already logged in, redirecting to dashboard");
+        router.replace('/dashboard');
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuthentication();
+  }, [router]);
+  
+  if (isLoading) {
+    return <div className={styles.container}><p>Loading...</p></div>;
+  }
+  
   return (
     <>
       {/* Load Three.js from CDN with afterInteractive strategy */}

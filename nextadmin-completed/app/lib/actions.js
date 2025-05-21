@@ -6,6 +6,7 @@ import { connectToDB } from "./utils";
 import { redirect } from "next/navigation";
 import { cookies } from 'next/headers';
 import { loginUser } from './auth';
+import { processUserEmbeddings } from "./cloudApi";
 
 export const addUser = async (formData) => {
   const { username, email, password, phone, address, isAdmin, isActive } =
@@ -158,28 +159,64 @@ export const authenticate = async (prevState, formData) => {
   console.log(`[ACTIONS DEBUG] Login result:`, { 
     success: result.success, 
     message: result.message || 'No message', 
-    hasToken: !!result.token 
+    hasToken: !!result.token,
+    username: result.user?.username || 'unknown',
   });
   
-  if (result.success) {
-    // Set the auth token cookie
-    cookies().set({
-      name: 'auth-token',
-      value: result.token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      // 7 days in seconds
-      maxAge: 60 * 60 * 24 * 7
-    });
+  if (result.success && result.user && result.user.username) {
+    // Create simplified user info for client
+    const userInfo = {
+      username: result.user.username,
+      isAdmin: !!result.user.isAdmin
+    };
     
-    console.log("[ACTIONS DEBUG] Auth cookie set successfully");
-    // Return an object with just the success property to avoid serialization issues
-    return { success: true };
+    console.log("[ACTIONS DEBUG] Setting cookies with user info:", userInfo);
+    
+    try {
+      // Set the auth token cookie (httpOnly for security)
+      cookies().set({
+        name: 'auth-token',
+        value: result.token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7 // 7 days
+      });
+      
+      // Set a non-httpOnly cookie for client-side access
+      cookies().set({
+        name: 'user-info',
+        value: JSON.stringify(userInfo),
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7 // 7 days
+      });
+      
+      // This is a direct approach to set localStorage during login
+      // The script will run on the client side
+      const clientUsername = result.user.username.replace(/'/g, "\\'"); // Escape single quotes
+      const script = `
+        localStorage.setItem('username', '${clientUsername}');
+        localStorage.setItem('isAdmin', ${result.user.isAdmin ? 'true' : 'false'});
+        console.log('[CLIENT] Username stored in localStorage:', '${clientUsername}');
+      `;
+      
+      console.log("[ACTIONS DEBUG] Auth cookies set successfully with username:", userInfo.username);
+      return { 
+        success: true, 
+        script,
+        // Include the username directly in the response for immediate display
+        username: result.user.username 
+      };
+    } catch (error) {
+      console.error("[ACTIONS ERROR] Error setting cookies:", error);
+      return { success: true, username: result.user.username }; // Still return success with username
+    }
   } else {
     console.log("[ACTIONS DEBUG] Authentication failed:", result.message);
-    // Return just the error message as a string
     return result.message || "Wrong Credentials";
   }
 };
@@ -190,41 +227,24 @@ export const updateUserEmbeddings = async (formData) => {
   try {
     connectToDB();
 
-    // In a real implementation:
-    // 1. Temporarily store the images or convert to Base64
-    // 2. Send images to your FastAPI backend
-    // 3. Receive embeddings from FastAPI
-    // 4. Update user record with embeddings
-
-    // This is a placeholder for the FastAPI call
-    // Replace with actual API call when you set up FastAPI
-    const response = await fetch("YOUR_FASTAPI_ENDPOINT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ 
-        userId, 
-        images: Array.from(images).map(img => img.name) // In real implementation, send actual image data
-      }),
-    });
-
-    const data = await response.json();
+    // Use the cloud API service to process the embeddings
+    const response = await processUserEmbeddings(userId, images);
+    
+    if (!response.success) {
+      throw new Error(response.message || "Failed to process embeddings");
+    }
     
     // Update user with received embeddings
-    // In a real scenario, this would be the embedding data from your FastAPI
-    const mockEmbeddings = [0.1, 0.2, 0.3, 0.4, 0.5]; // Replace with actual embeddings
-    
     await User.findByIdAndUpdate(userId, {
-      embeddings: mockEmbeddings, // or data.embeddings from your API
-      faceId: `face_${userId}`, // Generate a face ID or get from API
+      embeddings: response.embeddings, 
+      faceId: response.faceId || `face_${userId}`,
     });
 
     revalidatePath("/dashboard/embeddings");
     return { success: true, message: "Embeddings updated successfully" };
   } catch (err) {
     console.error(err);
-    return { success: false, message: "Failed to update embeddings" };
+    return { success: false, message: "Failed to update embeddings: " + err.message };
   }
 };
 
@@ -232,9 +252,10 @@ export const findUserByUsername = async (username) => {
   try {
     connectToDB();
     const user = await User.findOne({ username: username });
+    console.log(`[ACTIONS DEBUG] Found user by username ${username}:`, user ? user.username : 'not found');
     return user;
   } catch (err) {
-    console.error(err);
+    console.error("[ACTIONS ERROR] Error finding user:", err);
     throw new Error("Failed to find user");
   }
 };

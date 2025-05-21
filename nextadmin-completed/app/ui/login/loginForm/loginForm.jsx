@@ -18,6 +18,23 @@ const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUserLoggedIn = () => {
+      const isLoggedIn = 
+        localStorage.getItem('username') && 
+        localStorage.getItem('username') !== 'Guest';
+      
+      // If already logged in, redirect to dashboard
+      if (isLoggedIn) {
+        console.log("User already logged in, redirecting to dashboard");
+        router.replace("/dashboard");
+      }
+    };
+    
+    checkUserLoggedIn();
+  }, [router]);
+  
   // Check for success messages from redirects
   useEffect(() => {
     if (searchParams.has('registered')) {
@@ -34,15 +51,38 @@ const LoginForm = () => {
     console.log("Current form state:", state);
     if (state?.success) {
       console.log("Login successful from useEffect, redirecting to dashboard");
+      
+      try {
+        // Store the username directly from the form input
+        localStorage.setItem('username', username);
+        console.log("Username stored in localStorage from form input:", username);
+        
+        // If the response includes a username, use that as well
+        if (state.username) {
+          localStorage.setItem('username', state.username);
+          console.log("Username stored in localStorage from response:", state.username);
+        }
+        
+        // If script is provided, execute it as well
+        if (state.script) {
+          console.log("Executing script from server");
+          // eslint-disable-next-line no-new-func
+          const runScript = new Function(state.script);
+          runScript();
+        }
+      } catch (e) {
+        console.error("Error handling login success:", e);
+      }
+      
       // Show success animation/message before redirecting
       setSuccess("Login successful! Redirecting...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.replace("/dashboard");
       }, 800);
     } else if (state && typeof state === "string") {
       setError(state);
     }
-  }, [state, router]);
+  }, [state, router, username]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +98,6 @@ const LoginForm = () => {
       formData.append("password", password);
       
       // Let the formAction handle the submission
-      // The result will come back through the state update
       formAction(formData);
     } catch (err) {
       console.error("Login error:", err);
@@ -74,7 +113,7 @@ const LoginForm = () => {
       <div className={styles.inputContainer}>
         <input 
           type="text" 
-          placeholder="Username or Email" 
+          placeholder="Username" 
           name="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}

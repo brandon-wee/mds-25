@@ -36,7 +36,7 @@ export async function loginUser(credentials) {
     
     if (!user) {
       debugLog("User not found");
-      return { success: false, message: "User not found!" };
+      return { success: false, message: "User not found" };
     }
     
     debugLog("User found:", { 
@@ -45,46 +45,40 @@ export async function loginUser(credentials) {
       hasPassword: !!user.password
     });
     
-    // Log the actual stored password for debugging (remove in production)
-    debugLog("Stored password:", user.password);
-    debugLog("Provided password:", credentials.password);
+    // Debug the password comparison
+    console.log("[AUTH DEBUG] Stored password:", user.password);
+    console.log("[AUTH DEBUG] Provided password:", credentials.password);
     
     // Simple string comparison - no hashing
     const passwordMatches = credentials.password === user.password;
     debugLog("Password match:", passwordMatches);
     
     if (!passwordMatches) {
-      return { success: false, message: "Wrong password!" };
+      return { success: false, message: "Invalid password" };
     }
     
-    // Create token with user info
-    const tokenPayload = { 
+    // Create user data object for the token
+    const userData = {
       id: user._id.toString(),
       username: user.username,
-      isAdmin: user.isAdmin || false,
-      img: user.img || null,
-      exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days expiry
+      isAdmin: !!user.isAdmin
     };
     
-    const token = generateToken(tokenPayload);
+    console.log("[AUTH DEBUG] User data with username before token creation:", userData);
     
-    // Fix the undefined in log by not passing second parameter when not needed
-    debugLog("Login successful, token generated"); // Removed undefined parameter
+    // Convert to JSON string
+    const token = JSON.stringify(userData);
+    console.log("[AUTH DEBUG] FINAL TOKEN:", token);
+    debugLog("Login successful, token created with username:", userData.username);
     
     return { 
       success: true, 
-      token,
-      user: {
-        id: user._id.toString(),
-        username: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin || false,
-        img: user.img
-      }
+      token: token,
+      user: userData
     };
   } catch (err) {
     console.error("[AUTH ERROR]", err);
-    return { success: false, message: "Failed to login: " + err.message };
+    return { success: false, message: "Authentication error: " + err.message };
   }
 }
 
@@ -121,3 +115,26 @@ export function isAdmin() {
 export function logout() {
   cookies().delete('auth-token');
 }
+
+// Function to get user by username for direct user info retrieval
+export const getUserByUsername = async (username) => {
+  try {
+    await connectToDB();
+    const user = await User.findOne({ username }).lean();
+    
+    if (!user) {
+      return null;
+    }
+    
+    // Convert MongoDB ObjectId to string
+    const userData = {
+      ...user,
+      _id: user._id.toString()
+    };
+    
+    return userData;
+  } catch (error) {
+    console.error("[AUTH ERROR] Error fetching user by username:", error);
+    throw error;
+  }
+};
