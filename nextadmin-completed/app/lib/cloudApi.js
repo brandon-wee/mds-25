@@ -5,60 +5,101 @@
  * running on the EC2 instance at 54.87.49.184:8000
  */
 
-const CLOUD_API_URL = process.env.NEXT_PUBLIC_CLOUD_API_URL || "http://54.87.49.184:8000";
+const CLOUD_API_URL = process.env.NEXT_PUBLIC_CLOUD_API_URL || "http://192.168.146.198:8000";
 console.log("[CLOUD API DEBUG] Using Cloud API URL:", CLOUD_API_URL);
 
-// Shorter timeout for status checks to prevent long waiting times
-const STATUS_TIMEOUT = 2000;
-// Default timeout for other operations
-const DEFAULT_TIMEOUT = 5000;
+// Increase timeouts to avoid premature aborts
+const STATUS_TIMEOUT = 5000;  // Increased from 2000ms to 5000ms
+const DEFAULT_TIMEOUT = 10000; // Increased from 5000ms to 10000ms
+
+/**
+ * Retry logic for API calls
+ * @param {Function} apiFn - The function to call
+ * @param {number} retries - Number of retries 
+ * @param {number} delay - Delay between retries in ms
+ */
+const withRetry = async (apiFn, retries = 2, delay = 1000) => {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`[CLOUD API DEBUG] Retry attempt ${attempt}/${retries}`);
+      }
+      return await apiFn();
+    } catch (error) {
+      console.error(`[CLOUD API ERROR] Attempt ${attempt + 1}/${retries + 1} failed:`, error);
+      lastError = error;
+      
+      if (error.name === 'AbortError') {
+        console.log('[CLOUD API DEBUG] Request was aborted due to timeout');
+      }
+      
+      if (attempt < retries) {
+        console.log(`[CLOUD API DEBUG] Waiting ${delay}ms before next retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+};
 
 /**
  * Get real-time metadata from the edge device API
  */
 export const getMetadata = async () => {
-  try {
+  return withRetry(async () => {
+    console.log(`[CLOUD API DEBUG] Fetching metadata from: ${CLOUD_API_URL}/metadata`);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.log('[CLOUD API DEBUG] Aborting metadata request due to timeout');
+    }, DEFAULT_TIMEOUT);
     
-    const response = await fetch(`${CLOUD_API_URL}/metadata`, {
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    // Process metadata to extract names and best similarity score
-    let names = [];
-    let bestSim = 0;
-    
-    if (data.bboxes && Array.isArray(data.bboxes) && data.bboxes.length > 0) {
-      // Extract names from bboxes (element at index 4 is the name)
-      names = data.bboxes.map(bbox => bbox[4]);
+    try {
+      const response = await fetch(`${CLOUD_API_URL}/metadata`, {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        signal: controller.signal
+      });
       
-      // Find the highest similarity score (element at index 5 is the similarity)
-      bestSim = Math.max(...data.bboxes.map(bbox => bbox[5] || 0));
-      bestSim = parseFloat(bestSim.toFixed(2)); // Format to 2 decimal places
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("[CLOUD API DEBUG] Received metadata:", data);
+      
+      // Process metadata to extract names and best similarity score from the new format
+      let names = [];
+      let bestSim = 0;
+      
+      if (data.bboxes && Array.isArray(data.bboxes) && data.bboxes.length > 0) {
+        // Extract names from bboxes objects (name is now a property)
+        names = data.bboxes.map(bbox => bbox.name);
+        
+        // Find the highest similarity score (similarity is now a property)
+        bestSim = Math.max(...data.bboxes.map(bbox => bbox.similarity || 0));
+        bestSim = parseFloat(bestSim.toFixed(2)); // Format to 2 decimal places
+      }
+      
+      return {
+        fps: data.fps || 0,
+        people_count: data.people_count || 0,
+        names,
+        best_sim: bestSim,
+        // Include the original data for other components that might need it
+        raw: data
+      };
+    } finally {
+      clearTimeout(timeoutId);
     }
-    
-    return {
-      ...data,
-      names,
-      best_sim: bestSim
-    };
-  } catch (error) {
-    console.error("Error fetching metadata from cloud API:", error);
-    throw error;
-  }
+  });
 };
 
 /**
@@ -74,36 +115,52 @@ export const getVideoFeedUrl = () => {
  * @param {File[]} images - Array of image files
  */
 export const processUserEmbeddings = async (userId, images) => {
-  try {
+  return withRetry(async () => {
     // Create a FormData object to send the images
     const formData = new FormData();
     formData.append('user_id', userId);
     
     // Append each image to the form data
+    // Request PNG format for better quality
     for (let i = 0; i < images.length; i++) {
-      formData.append('images', images[i]);
+      const image = images[i];
+      
+      // If the image is not PNG, try to convert it or add a flag
+      if (image.type !== 'image/png') {
+        console.log(`[CLOUD API DEBUG] Note: Image ${i} is not PNG format (${image.type})`);
+      }
+      
+      formData.append('images', image);
     }
+    
+    // Add format preference
+    formData.append('format', 'png');
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.log('[CLOUD API DEBUG] Aborting embeddings processing request due to timeout');
+    }, DEFAULT_TIMEOUT * 2); // Double timeout for image processing
     
-    const response = await fetch(`${CLOUD_API_URL}/process-embeddings`, {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+    try {
+      const response = await fetch(`${CLOUD_API_URL}/process-embeddings`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log("[CLOUD API DEBUG] Embeddings processing result:", result);
+      
+      return result;
+    } finally {
+      clearTimeout(timeoutId);
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error("Error processing embeddings via cloud API:", error);
-    throw error;
-  }
+  });
 };
 
 /**
@@ -114,28 +171,38 @@ export const getApiStatus = async () => {
   try {
     console.log("[CLOUD API DEBUG] Checking API status");
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), STATUS_TIMEOUT);
-    
-    const response = await fetch(`${CLOUD_API_URL}/status`, {
-      headers: {
-        'Accept': 'application/json',
-      },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-    
-    const status = await response.json();
-    console.log("[CLOUD API DEBUG] API status:", status);
-    return status;
+    return await withRetry(async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('[CLOUD API DEBUG] Aborting status check due to timeout');
+      }, STATUS_TIMEOUT);
+      
+      try {
+        const response = await fetch(`${CLOUD_API_URL}/status`, {
+          headers: {
+            'Accept': 'application/json',
+          },
+          signal: controller.signal
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        
+        const status = await response.json();
+        console.log("[CLOUD API DEBUG] API status:", status);
+        return status;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }, 1); // Only retry once for status
   } catch (error) {
     console.error("Error checking cloud API status:", error);
-    return { status: 'error', message: error.message };
+    return { 
+      status: 'error', 
+      message: error.name === 'AbortError' ? 'Connection timed out' : error.message 
+    };
   }
 };
 

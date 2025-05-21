@@ -227,21 +227,49 @@ export const updateUserEmbeddings = async (formData) => {
   try {
     connectToDB();
 
-    // Use the cloud API service to process the embeddings
+    // Use the cloud API service to process the embeddings with PNG format
     const response = await processUserEmbeddings(userId, images);
     
     if (!response.success) {
       throw new Error(response.message || "Failed to process embeddings");
     }
     
-    // Update user with received embeddings
-    await User.findByIdAndUpdate(userId, {
-      embeddings: response.embeddings, 
-      faceId: response.faceId || `face_${userId}`,
-    });
+    // Handle the new API response format
+    if (response.meta && response.meta.bboxes && response.meta.bboxes.length > 0) {
+      // Extract face information from the first detected face
+      const faceData = response.meta.bboxes[0];
+      
+      // Update user with received embeddings and additional face information
+      await User.findByIdAndUpdate(userId, {
+        embeddings: response.embeddings,
+        faceId: response.faceId || `face_${userId}`,
+        faceMetadata: {
+          bbox: faceData.bbox,
+          similarity: faceData.similarity,
+          fps: response.meta.fps,
+          detectionConfidence: response.meta.people_count > 0 ? 1.0 : 0.0
+        },
+        lastDetectionDate: new Date()
+      });
+      
+      console.log(`[ACTIONS DEBUG] Updated embeddings for user ${userId} with ${response.meta.people_count} face(s) detected`);
+    } else {
+      console.log(`[ACTIONS DEBUG] No faces detected in the provided images for user ${userId}`);
+      // Still update the embeddings if provided, even if no faces were detected in this attempt
+      if (response.embeddings) {
+        await User.findByIdAndUpdate(userId, {
+          embeddings: response.embeddings,
+          faceId: response.faceId || `face_${userId}`
+        });
+      }
+    }
 
     revalidatePath("/dashboard/embeddings");
-    return { success: true, message: "Embeddings updated successfully" };
+    return { 
+      success: true, 
+      message: "Embeddings updated successfully", 
+      peopleCount: response.meta?.people_count || 0 
+    };
   } catch (err) {
     console.error(err);
     return { success: false, message: "Failed to update embeddings: " + err.message };
