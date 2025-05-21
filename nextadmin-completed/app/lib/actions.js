@@ -221,60 +221,65 @@ export const authenticate = async (prevState, formData) => {
   }
 };
 
-export const updateUserEmbeddings = async (formData) => {
-  const { userId, images } = Object.fromEntries(formData);
-
+export const updateUserEmbeddings = async (data) => {
+  console.log("updateUserEmbeddings received data:", data);
+  
   try {
+    const { userId, embeddingUpdated } = data;
+    
+    if (!userId) {
+      console.error("No userId provided to updateUserEmbeddings");
+      return { success: false, message: "No user ID provided" };
+    }
+    
+    // Connect to database
     connectToDB();
-
-    // Use the cloud API service to process the embeddings with PNG format
-    const response = await processUserEmbeddings(userId, images);
     
-    if (!response.success) {
-      throw new Error(response.message || "Failed to process embeddings");
-    }
+    console.log(`Updating user ${userId} with embeddingsUpdated=true`);
     
-    // Handle the new API response format
-    if (response.meta && response.meta.bboxes && response.meta.bboxes.length > 0) {
-      // Extract face information from the first detected face
-      const faceData = response.meta.bboxes[0];
-      
-      // Update user with received embeddings and additional face information
-      await User.findByIdAndUpdate(userId, {
-        embeddings: response.embeddings,
-        faceId: response.faceId || `face_${userId}`,
-        faceMetadata: {
-          bbox: faceData.bbox,
-          similarity: faceData.similarity,
-          fps: response.meta.fps,
-          detectionConfidence: response.meta.people_count > 0 ? 1.0 : 0.0
-        },
-        lastDetectionDate: new Date()
-      });
-      
-      console.log(`[ACTIONS DEBUG] Updated embeddings for user ${userId} with ${response.meta.people_count} face(s) detected`);
-    } else {
-      console.log(`[ACTIONS DEBUG] No faces detected in the provided images for user ${userId}`);
-      // Still update the embeddings if provided, even if no faces were detected in this attempt
-      if (response.embeddings) {
-        await User.findByIdAndUpdate(userId, {
-          embeddings: response.embeddings,
-          faceId: response.faceId || `face_${userId}`
-        });
+    // Update user record to indicate embeddings have been updated
+    const result = await User.findByIdAndUpdate(userId, {
+      $set: {
+        embeddingsUpdated: true,
+        updatedAt: new Date()
       }
+    });
+    
+    if (!result) {
+      console.error(`User with ID ${userId} not found`);
+      return { success: false, message: "User not found" };
     }
-
-    revalidatePath("/dashboard/embeddings");
+    
+    console.log("User updated successfully:", result.username || userId);
+    
     return { 
       success: true, 
-      message: "Embeddings updated successfully", 
-      peopleCount: response.meta?.people_count || 0 
+      message: "Embedding status updated successfully!" 
     };
-  } catch (err) {
-    console.error(err);
-    return { success: false, message: "Failed to update embeddings: " + err.message };
+  } catch (error) {
+    console.error("Error in updateUserEmbeddings:", error);
+    return { success: false, message: `Database error: ${error.message}` };
   }
 };
+
+// Helper function to upload image (implementation depends on your storage solution)
+async function uploadImage(file, userId) {
+  // Example implementation - adjust according to your storage mechanism
+  // For cloud storage like AWS S3, you'd use their SDK here
+  // For local file system in Next.js:
+  
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  
+  // Create unique filename
+  const filename = `${userId}_profile_${Date.now()}.${file.name.split('.').pop()}`;
+  const path = `/uploads/profiles/${filename}`;
+  
+  // Save file
+  // Implementation depends on your setup (e.g., local file system, S3, etc.)
+  
+  return path; // Return the path to the uploaded image
+}
 
 export const findUserByUsername = async (username) => {
   try {

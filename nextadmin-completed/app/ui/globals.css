@@ -1,4 +1,61 @@
 :root {
+  /* Light theme */
+  --bg: #fff;
+  --bgSoft: #f8f9fa;
+  --bgDark: #eaeaea;
+  --text: #333;
+  --textSoft: #666;
+  --border: #ddd;
+  
+  --primary: #3498db;
+  --primaryHover: #2980b9;
+  --success: #27ae60;
+  --successHover: #2ecc71;
+  --danger: #e74c3c;
+  --dangerHover: #c0392b;
+  --warning: #e67e22;
+  --warningHover: #f39c12;
+  --disabled: #95a5a6;
+  
+  --bgPrimary: #eaf2f8;
+  --bgSuccess: #e8f8f5;
+  --bgDanger: #fdecea;
+  
+  /* Camera specific */
+  --dark: #222;
+  --darkBg: #1a1a1a;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --bgSoft: #2c2c2c;
+  --bgDark: #333;
+  --text: #f8f8f8;
+  --textSoft: #aaa;
+  --border: #444;
+  
+  /* Colors stay mostly the same for buttons */
+  --primary: #3498db;
+  --primaryHover: #2980b9;
+  --success: #2ecc71;
+  --successHover: #27ae60;
+  --danger: #e74c3c;
+  --dangerHover: #c0392b;
+  --warning: #f39c12;
+  --warningHover: #e67e22;
+  --disabled: #777;
+  
+  --bgPrimary: rgba(52, 152, 219, 0.2);
+  --bgSuccess: rgba(46, 204, 113, 0.2);
+  --bgDanger: rgba(231, 76, 60, 0.2);
+  
+  /* Camera specific */
+  --dark: #111;
+  --darkBg: #000;
+}
+
+:root {
   /* Dark theme (default) */
   --bg: #151c2c;
   --bgSoft: #182237;

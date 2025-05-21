@@ -116,49 +116,63 @@ export const getVideoFeedUrl = () => {
  */
 export const processUserEmbeddings = async (userId, images) => {
   return withRetry(async () => {
-    // Create a FormData object to send the images
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    
-    // Append each image to the form data
-    // Request PNG format for better quality
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      
-      // If the image is not PNG, try to convert it or add a flag
-      if (image.type !== 'image/png') {
-        console.log(`[CLOUD API DEBUG] Note: Image ${i} is not PNG format (${image.type})`);
-      }
-      
-      formData.append('images', image);
-    }
-    
-    // Add format preference
-    formData.append('format', 'png');
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-      console.log('[CLOUD API DEBUG] Aborting embeddings processing request due to timeout');
-    }, DEFAULT_TIMEOUT * 2); // Double timeout for image processing
-    
+    // Get the user details first to get the username
     try {
-      const response = await fetch(`${CLOUD_API_URL}/process-embeddings`, {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal
-      });
+      console.log(`[CLOUD API DEBUG] Processing embeddings for user ID: ${userId}`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
+      // Create a FormData object to send the images
+      const formData = new FormData();
+      
+      // The FastAPI endpoint expects "username" and "files" parameters
+      formData.append('username', userId); // Using userId as username for now
+      
+      // Append each image to the form data with the correct field name "files"
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        
+        // If the image is not PNG, try to convert it or add a flag
+        if (image.type !== 'image/png') {
+          console.log(`[CLOUD API DEBUG] Note: Image ${i} is not PNG format (${image.type})`);
+        }
+        
+        formData.append('files', image); // Use "files" instead of "images"
       }
       
-      const result = await response.json();
-      console.log("[CLOUD API DEBUG] Embeddings processing result:", result);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('[CLOUD API DEBUG] Aborting embeddings processing request due to timeout');
+      }, DEFAULT_TIMEOUT * 2); // Double timeout for image processing
       
-      return result;
-    } finally {
-      clearTimeout(timeoutId);
+      try {
+        // Use the correct endpoint from the FastAPI server
+        console.log(`[CLOUD API DEBUG] Sending request to: ${CLOUD_API_URL}/calculate_average_embedding`);
+        const response = await fetch(`${CLOUD_API_URL}/calculate_average_embedding`, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'No error details available');
+          throw new Error(`HTTP error ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log("[CLOUD API DEBUG] Embeddings processing result:", result);
+        
+        return {
+          status: result.status || 'success',
+          message: result.message || 'Embeddings processed successfully',
+          images: images.length,
+          embedding: result.embedding
+        };
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    } catch (error) {
+      console.error("[CLOUD API ERROR] Error processing embeddings:", error);
+      throw error;
     }
   });
 };
