@@ -29,31 +29,29 @@ const PeoplePage = () => {
       const knownUsers = await getAllUsers();
       const unknownPersons = await getAllUnknownPersons();
       
-      // Safely map user data without potential circular references
-      const knownUserObjects = Array.isArray(knownUsers) ? knownUsers.map(user => {
-        // Create a new clean object with only the data we need
-        return {
-          id: String(user._id || Math.random()),
-          name: String(user.username || "Unnamed User"),
-          isAdmin: Boolean(user.isAdmin),
-          isActive: Boolean(user.isActive),
-          image: String(user.img || "/noavatar.png"),
-          status: "known",
-          confidenceScore: user.lastConfidence ? Number(user.lastConfidence) * 100 : 0,
-          lastDetected: user.lastDetectedAt ? 
-                      new Date(user.lastDetectedAt).toLocaleString() : 'Never'
-        };
-      }) : [];
+      // Filter known users to only those who have been detected
+      const detectedUsers = knownUsers.filter(user => user.lastDetectedAt);
+      console.log(`Filtered to ${detectedUsers.length} detected users out of ${knownUsers.length} total users`);
       
-      // Format unknown persons for display - safely extract only the fields we need
+      // Safely map detected user data
+      const knownUserObjects = Array.isArray(detectedUsers) ? detectedUsers.map(user => ({
+        id: String(user._id || Math.random()),
+        name: String(user.username || "Unnamed User"),
+        isAdmin: Boolean(user.isAdmin),
+        isActive: Boolean(user.isActive),
+        image: user.img || "/noavatar.png",
+        status: "known",
+        confidenceScore: user.lastConfidence ? Number(user.lastConfidence) * 100 : 0,
+        lastDetected: new Date(user.lastDetectedAt).toLocaleString()
+      })) : [];
+      
+      // Process unknown persons, using standard avatar for all of them
       const unknownPeopleObjects = Array.isArray(unknownPersons) ? unknownPersons.map(person => ({
         id: person.unknownId || `unknown-${Math.random()}`,
         name: person.name || "Unknown Person",
         isAdmin: false,
         isActive: false,
-        image: person.faceImage ? 
-          `data:image/png;base64,${person.faceImage}` : 
-          "/noavatar.png",
+        image: "/noavatar.png", // Always use default avatar for unknown
         status: "unknown",
         confidenceScore: person.lastConfidence ? person.lastConfidence * 100 : 0,
         lastDetected: person.lastDetectedAt ? 
@@ -99,7 +97,7 @@ const PeoplePage = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>User & Detection Database</h1>
+        <h1 className={styles.title}>Detected Users & Unknown Persons</h1>
         <div className={styles.actions}>
           <button 
             className={styles.refreshButton}
@@ -117,7 +115,7 @@ const PeoplePage = () => {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="all">All Users</option>
+          <option value="all">All Detections</option>
           <option value="known">Known Users</option>
           <option value="unknown">Unknown Persons</option>
         </select>
@@ -150,7 +148,7 @@ const PeoplePage = () => {
           <p>No users match your filter: {statusFilter}</p>
         </div>
       ) : (
-        <>
+        filteredPeople.length > 0 && (
           <table className={styles.table}>
             <thead>
               <tr>
@@ -173,7 +171,6 @@ const PeoplePage = () => {
                         width={35}
                         height={35}
                         className={styles.personImage}
-                        unoptimized={person.image?.startsWith('data:')}
                       />
                       {person.name}
                     </div>
@@ -207,7 +204,7 @@ const PeoplePage = () => {
               ))}
             </tbody>
           </table>
-        </>
+        )
       )}
     </div>
   );
