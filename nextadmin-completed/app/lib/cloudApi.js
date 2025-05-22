@@ -5,7 +5,7 @@
  * running on the EC2 instance at 54.87.49.184:8000
  */
 
-const CLOUD_API_URL = process.env.NEXT_PUBLIC_CLOUD_API_URL || "http://192.168.146.198:8000";
+const CLOUD_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://192.168.146.198:8000";
 console.log("[CLOUD API DEBUG] Using Cloud API URL:", CLOUD_API_URL);
 
 // Increase timeouts to avoid premature aborts

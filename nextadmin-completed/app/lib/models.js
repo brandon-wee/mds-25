@@ -53,6 +53,27 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
       default: null
+    },
+    // New fields for confidence tracking
+    lastConfidence: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 1
+    },
+    lastDetectedAt: {
+      type: Date,
+      default: null
+    },
+    confidenceHistory: {
+      confidence: {
+        type: [Number], // Array of confidence values
+        default: []
+      },
+      timestamp: {
+        type: [Date], // Array of timestamps
+        default: []
+      }
     }
   },
   { timestamps: true }
@@ -105,5 +126,46 @@ const modelSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// New schema for tracking unknown persons
+const unknownPersonSchema = new mongoose.Schema(
+  {
+    unknownId: {
+      type: String,
+      required: true,
+      unique: true,
+      default: () => `unknown_${Math.random().toString(36).substring(2, 9)}`
+    },
+    name: {
+      type: String,
+      required: true,
+      default: "Unknown Person"
+    },
+    faceImage: {
+      type: String, // Base64 encoded image
+      default: null
+    },
+    lastConfidence: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 1
+    },
+    lastDetectedAt: {
+      type: Date,
+      default: Date.now
+    },
+    detectionCount: {
+      type: Number,
+      default: 1
+    },
+    bbox: {
+      type: [Number],
+      default: null
+    }
+  },
+  { timestamps: true }
+);
+
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export const Models = mongoose.models.Models || mongoose.model("Models", modelSchema);
+export const UnknownPerson = mongoose.models.UnknownPerson || mongoose.model("UnknownPerson", unknownPersonSchema);

@@ -5,6 +5,7 @@ import styles from "@/app/ui/dashboard/analytics/realtime/realtime.module.css";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { MdPeopleAlt, MdSpeed, MdErrorOutline, MdFace, MdSwapHoriz, MdHistory, MdDelete, MdDeleteSweep } from "react-icons/md";
 import { getMetadata, getCloudApiUrl } from "@/app/lib/cloudApi";
+import { updateUserConfidence, saveUnknownPerson, findUserByUsername } from "@/app/lib/actions";
 
 // Debug mode to help troubleshoot API issues
 const DEBUG = true;
@@ -28,6 +29,9 @@ const RealTimeDataPage = () => {
   
   const apiUrl = getCloudApiUrl();
   const prevApiUrlRef = useRef(apiUrl);
+
+  // Track processed users to avoid duplicate processing
+  const [processedUsers, setProcessedUsers] = useState(new Set());
 
   // Handle deleting a person from history
   const deletePerson = (personId) => {
@@ -82,16 +86,60 @@ const RealTimeDataPage = () => {
         // Update metadata with processed information from cloud API
         setMetaData(data);
         
-        // Store detected persons when API is connected
+        // Process detected persons when API is connected
         if (data.raw?.bboxes && Array.isArray(data.raw.bboxes) && data.raw.bboxes.length > 0) {
-          const timestamp = new Date().toLocaleTimeString();
+          const timestamp = new Date();
+          const currentProcessed = new Set();
           
+          // Process each detected person and update database
+          for (const person of data.raw.bboxes) {
+            const personKey = `${person.name}-${timestamp.getTime()}`;
+            
+            try {
+              if (!person.name.startsWith("Unknown")) {
+                // Known person - update in user database with confidence history
+                const userData = await findUserByUsername(person.name);
+                
+                if (userData) {
+                  // Update with current detection data - appending to confidence array
+                  await updateUserConfidence(person.name, person.similarity);
+                  
+                  if (DEBUG) {
+                    console.log(`[DETECTION] Updated known user ${person.name} with confidence ${person.similarity}`);
+                    console.log(`[DETECTION] Added entry to confidence history arrays`);
+                  }
+                } else {
+                  console.warn(`User ${person.name} detected but not found in database`);
+                }
+                
+                currentProcessed.add(personKey);
+              } else {
+                // Unknown person - save to unknown persons database with last confidence & timestamp
+                await saveUnknownPerson({
+                  ...person,
+                  lastDetectedAt: timestamp
+                });
+                
+                if (DEBUG) {
+                  console.log(`[DETECTION] Saved unknown person ${person.name} with confidence ${person.similarity}`);
+                }
+              }
+            } catch (error) {
+              console.error(`Failed to process person ${person.name}:`, error);
+            }
+          }
+          
+          // Update processed users set
+          setProcessedUsers(currentProcessed);
+          
+          // Update the UI with detected persons
           setDetectedPersons(prevPersons => {
             // Add timestamp to each person detected in this frame
             const newPersons = data.raw.bboxes.map(person => ({
               ...person,
-              detectedAt: timestamp,
-              id: `${timestamp}-${Math.random().toString(36).substring(2, 9)}`
+              detectedAt: timestamp.toLocaleTimeString(),
+              detectionTime: timestamp,
+              id: `${timestamp.getTime()}-${person.name}-${Math.random().toString(36).substring(2, 9)}`
             }));
             
             // Combine with previous persons and limit total number

@@ -1,14 +1,22 @@
 import mongoose from "mongoose";
 
-const connection = {};
-
 export const connectToDB = async () => {
   try {
-    if (connection.isConnected) return;
-    const db = await mongoose.connect(process.env.MONGO);
-    connection.isConnected = db.connections[0].readyState;
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+    
+    const MONGO_URL = process.env.MONGO || "mongodb://127.0.0.1:27017/nextadmin";
+    
+    if (!MONGO_URL) {
+      throw new Error("Please define the MONGO environment variable");
+    }
+    
+    const conn = await mongoose.connect(MONGO_URL, {});
+    console.log("MongoDB connected successfully");
+    return conn;
   } catch (error) {
-    console.log(error)
-    throw new Error(error);
+    console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
 };

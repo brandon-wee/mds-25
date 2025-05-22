@@ -282,6 +282,55 @@ tr.unknown {
   font-style: italic;
 }
 
+/* Debug info styling */
+.debugInfo {
+  margin-left: auto;
+  color: var(--textSoft);
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* New styles */
+.neverDetected {
+  color: var(--textSoft);
+  font-style: italic;
+}
+
+.personId {
+  font-size: 0.8rem;
+  color: var(--textSoft);
+  margin-top: 2px;
+}
+
+/* Debug section styles */
+.debugSection {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 5px;
+}
+
+.debugInfo {
+  margin-top: 20px;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.debugInfo pre {
+  background: rgba(0,0,0,0.1);
+  padding: 10px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.errorContainer {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: rgba(255,0,0,0.1);
+  border-radius: 5px;
+  color: #d8000c;
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
   .filters {

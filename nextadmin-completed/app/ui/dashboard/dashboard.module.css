@@ -80,6 +80,24 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.chartContainer {
+  background-color: var(--bgSoft);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  min-height: 450px; /* Ensure minimum height for chart */
+  width: 100%;
+}
+
+.chartSection {
+  background-color: var(--bgSoft);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
 /* Enhanced animations */
 @keyframes fadeInUp {
   from {

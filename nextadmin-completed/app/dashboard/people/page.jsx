@@ -3,115 +3,95 @@
 import styles from "@/app/ui/dashboard/people/people.module.css";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { MdDeleteSweep, MdRefresh, MdSearchOff, MdAdminPanelSettings, MdPersonOff } from "react-icons/md";
-import { getMetadata } from "@/app/lib/cloudApi";
-import { findUserByUsername } from "@/app/lib/actions";
+import { MdRefresh, MdSearchOff, MdAdminPanelSettings, MdPersonOff } from "react-icons/md";
+import { getAllUnknownPersons, getAllUsers } from "@/app/lib/actions";
+
+// Enable debug mode
+const DEBUG = true;
 
 const PeoplePage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [detectedPeople, setDetectedPeople] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [debugInfo, setDebugInfo] = useState({
+    knownUsersCount: 0,
+    unknownPersonsCount: 0,
+    error: null
+  });
   
-  // Fetch detected people and match with database users
-  useEffect(() => {
-    const fetchDetectedPeople = async () => {
-      setIsLoading(true);
-      try {
-        // Get latest metadata from the API
-        const data = await getMetadata();
-        
-        if (data && data.raw && data.raw.bboxes) {
-          // Process all detected people
-          const processedPeople = await Promise.all(
-            data.raw.bboxes.map(async (person, index) => {
-              // Check if name starts with "Unknown"
-              const isKnown = !person.name.startsWith("Unknown");
-              let userData = null;
-              
-              // If it's a known person, try to find them in the database
-              if (isKnown) {
-                try {
-                  userData = await findUserByUsername(person.name);
-                } catch (err) {
-                  console.error(`Error finding user: ${person.name}`, err);
-                }
-              }
-              
-              // Create a standardized person object
-              return {
-                id: `detection-${Date.now()}-${index}`,
-                name: person.name,
-                isAdmin: userData?.isAdmin || false,
-                isActive: userData?.isActive || false,
-                image: userData?.image || "/noavatar.png",
-                status: isKnown ? "known" : "unknown",
-                confidenceScore: person.similarity * 100,
-                lastDetected: new Date().toLocaleString(),
-                rawData: person
-              };
-            })
-          );
-          
-          // Update the state with new people
-          setDetectedPeople(prevPeople => {
-            // Combine with existing people, avoiding duplicates by name
-            const nameMap = new Map();
-            
-            // First add new detections
-            processedPeople.forEach(person => {
-              nameMap.set(person.name, person);
-            });
-            
-            // Then add previous detections that aren't duplicates
-            prevPeople.forEach(person => {
-              if (!nameMap.has(person.name)) {
-                nameMap.set(person.name, person);
-              }
-            });
-            
-            return Array.from(nameMap.values());
-          });
-        }
-        
-        setLastUpdated(new Date());
-      } catch (error) {
-        console.error("Error fetching detected people:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    // Initial fetch
-    fetchDetectedPeople();
-    
-    // Set up interval for periodic updates
-    const intervalId = setInterval(fetchDetectedPeople, 15000); // 15 seconds
-    
-    return () => clearInterval(intervalId);
-  }, []);
-  
-  // Handle clearing all detection history
-  const clearAllDetections = () => {
-    setDetectedPeople([]);
-  };
-  
-  // Manually refresh detections
-  const refreshDetections = async () => {
+  const fetchDatabaseData = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const data = await getMetadata();
-      // Process the data and update state
-      // (Similar logic to useEffect)
+      console.log("Fetching data from database...");
+      
+      // Fetch both known users and unknown persons directly
+      const knownUsers = await getAllUsers();
+      const unknownPersons = await getAllUnknownPersons();
+      
+      // Safely map user data without potential circular references
+      const knownUserObjects = Array.isArray(knownUsers) ? knownUsers.map(user => {
+        // Create a new clean object with only the data we need
+        return {
+          id: String(user._id || Math.random()),
+          name: String(user.username || "Unnamed User"),
+          isAdmin: Boolean(user.isAdmin),
+          isActive: Boolean(user.isActive),
+          image: String(user.img || "/noavatar.png"),
+          status: "known",
+          confidenceScore: user.lastConfidence ? Number(user.lastConfidence) * 100 : 0,
+          lastDetected: user.lastDetectedAt ? 
+                      new Date(user.lastDetectedAt).toLocaleString() : 'Never'
+        };
+      }) : [];
+      
+      // Format unknown persons for display - safely extract only the fields we need
+      const unknownPeopleObjects = Array.isArray(unknownPersons) ? unknownPersons.map(person => ({
+        id: person.unknownId || `unknown-${Math.random()}`,
+        name: person.name || "Unknown Person",
+        isAdmin: false,
+        isActive: false,
+        image: person.faceImage ? 
+          `data:image/png;base64,${person.faceImage}` : 
+          "/noavatar.png",
+        status: "unknown",
+        confidenceScore: person.lastConfidence ? person.lastConfidence * 100 : 0,
+        lastDetected: person.lastDetectedAt ? 
+                    new Date(person.lastDetectedAt).toLocaleString() : 'Never'
+      })) : [];
+      
+      // Combine all people and sort by last detected time
+      const allPeople = [...knownUserObjects, ...unknownPeopleObjects];
+      console.log(`Total people to display: ${allPeople.length}`);
+      
+      // Sort by detection time
+      const sortedPeople = allPeople.sort((a, b) => {
+        if (a.lastDetected === 'Never') return 1;
+        if (b.lastDetected === 'Never') return -1;
+        return new Date(b.lastDetected) - new Date(a.lastDetected);
+      });
+      
+      // Update state
+      setDetectedPeople(sortedPeople);
       setLastUpdated(new Date());
     } catch (error) {
-      console.error("Error refreshing detections:", error);
+      console.error("Error fetching database data:", error);
+      setDebugInfo(prev => ({
+        ...prev,
+        error: error.message
+      }));
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Filter people based on detection status only
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchDatabaseData();
+    // No auto refresh, only manual
+  }, []);
+  
+  // Filter people based on status
   const filteredPeople = detectedPeople.filter(person => 
     statusFilter === "all" || person.status === statusFilter
   );
@@ -119,22 +99,14 @@ const PeoplePage = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Face Detection Results</h1>
+        <h1 className={styles.title}>User & Detection Database</h1>
         <div className={styles.actions}>
           <button 
             className={styles.refreshButton}
-            onClick={refreshDetections}
+            onClick={fetchDatabaseData}
             disabled={isLoading}
           >
             <MdRefresh className={isLoading ? styles.spinning : ""} /> Refresh
-          </button>
-          
-          <button 
-            className={styles.clearButton}
-            onClick={clearAllDetections}
-            disabled={detectedPeople.length === 0}
-          >
-            <MdDeleteSweep /> Clear History
           </button>
         </div>
       </div>
@@ -145,83 +117,97 @@ const PeoplePage = () => {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="all">All Detections</option>
-          <option value="known">Known Faces</option>
-          <option value="unknown">Unknown Faces</option>
+          <option value="all">All Users</option>
+          <option value="known">Known Users</option>
+          <option value="unknown">Unknown Persons</option>
         </select>
         
         {lastUpdated && (
           <span className={styles.lastUpdated}>
-            Last updated: {lastUpdated.toLocaleTimeString()}
+            Last updated: {lastUpdated.toLocaleTimeString()} | 
+            Found: {detectedPeople.length} people
           </span>
         )}
       </div>
       
-      {isLoading && <div className={styles.loadingIndicator}>Loading detection data...</div>}
-      
-      {!isLoading && filteredPeople.length === 0 && (
+      {isLoading ? (
+        <div className={styles.loadingIndicator}>Loading user data...</div>
+      ) : debugInfo.error ? (
+        <div className={styles.errorContainer}>
+          <h3>Error loading data</h3>
+          <p>{debugInfo.error}</p>
+        </div>
+      ) : detectedPeople.length === 0 ? (
+        <div className={styles.debugSection}>
+          <div className={styles.noResults}>
+            <MdSearchOff size={48} />
+            <p>No users found in the database</p>
+          </div>
+        </div>
+      ) : filteredPeople.length === 0 ? (
         <div className={styles.noResults}>
           <MdSearchOff size={48} />
-          <p>No detected people match your filters</p>
+          <p>No users match your filter: {statusFilter}</p>
         </div>
-      )}
-
-      {filteredPeople.length > 0 && (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <td>Person</td>
-              <td>Status</td>
-              <td>Admin</td>
-              <td>Active</td>
-              <td>Confidence</td>
-              <td>Last Detected</td>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPeople.map((person) => (
-              <tr key={person.id} className={styles[person.status]}>
-                <td>
-                  <div className={styles.person}>
-                    <Image
-                      src={person.image}
-                      alt={person.name}
-                      width={40}
-                      height={40}
-                      className={styles.personImage}
-                    />
-                    {person.name}
-                  </div>
-                </td>
-                <td>
-                  <span className={`${styles.statusBadge} ${styles[person.status]}`}>
-                    {person.status === "known" ? "Known" : "Unknown"}
-                  </span>
-                </td>
-                <td>
-                  {person.isAdmin ? (
-                    <div className={styles.adminBadge}>
-                      <MdAdminPanelSettings size={18} /> Admin
-                    </div>
-                  ) : (
-                    "No"
-                  )}
-                </td>
-                <td>
-                  {person.isActive ? (
-                    <span className={styles.activeBadge}>Active</span>
-                  ) : (
-                    <span className={styles.inactiveBadge}>
-                      <MdPersonOff size={16} /> Inactive
-                    </span>
-                  )}
-                </td>
-                <td>{person.confidenceScore.toFixed(1)}%</td>
-                <td>{person.lastDetected}</td>
+      ) : (
+        <>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <td>Person</td>
+                <td>Status</td>
+                <td>Admin</td>
+                <td>Active</td>
+                <td>Confidence</td>
+                <td>Last Detected</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredPeople.map((person) => (
+                <tr key={person.id} className={styles[person.status]}>
+                  <td>
+                    <div className={styles.person}>
+                      <Image
+                        src={person.image}
+                        alt={person.name}
+                        width={35}
+                        height={35}
+                        className={styles.personImage}
+                        unoptimized={person.image?.startsWith('data:')}
+                      />
+                      {person.name}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`${styles.statusBadge} ${styles[person.status]}`}>
+                      {person.status === "known" ? "Known" : "Unknown"}
+                    </span>
+                  </td>
+                  <td>
+                    {person.isAdmin ? (
+                      <div className={styles.adminBadge}>
+                        <MdAdminPanelSettings size={18} /> Admin
+                      </div>
+                    ) : (
+                      "No"
+                    )}
+                  </td>
+                  <td>
+                    {person.isActive ? (
+                      <span className={styles.activeBadge}>Active</span>
+                    ) : (
+                      <span className={styles.inactiveBadge}>
+                        <MdPersonOff size={16} /> Inactive
+                      </span>
+                    )}
+                  </td>
+                  <td>{person.lastDetected === 'Never' ? 'N/A' : `${person.confidenceScore.toFixed(1)}%`}</td>
+                  <td>{person.lastDetected}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
     </div>
   );
