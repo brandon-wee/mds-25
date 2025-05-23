@@ -14,6 +14,8 @@ import {
   MdLogout,
   MdOutlineCategory,
   MdFace,
+  MdCircle,
+  MdAdminPanelSettings,
 } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -241,19 +243,30 @@ const Sidebar = () => {
   
   return (
     <div className={styles.container}>
-      <div className={styles.user}>
-        <Image
-          className={styles.userImage}
-          src={user?.img || "/noavatar.png"}
-          alt=""
-          width="50"
-          height="50"
-        />
-        <div className={styles.userDetail}>
-          <span className={styles.username}>
-            {user?.username || "Guest"}
-          </span>
-          {user?.isAdmin && <span className={styles.userTitle}>Administrator</span>}
+      <div className={styles.profileContainer}>
+        <div className={styles.avatarWrapper}>
+          <Image
+            className={styles.avatar}
+            src={user?.img || "/noavatar.png"}
+            alt="Profile"
+            width="50"
+            height="50"
+            priority
+          />
+          <div className={styles.statusDot}></div>
+        </div>
+        <div className={styles.profileInfo}>
+          <h3 className={styles.profileName}>{user?.username || "Guest"}</h3>
+          {user?.isAdmin ? (
+            <div className={styles.roleBadge}>
+              <MdAdminPanelSettings />
+              <span>Admin</span>
+            </div>
+          ) : (
+            <div className={styles.roleBadge}>
+              <span>Member</span>
+            </div>
+          )}
         </div>
       </div>
       <ul className={styles.list}>
