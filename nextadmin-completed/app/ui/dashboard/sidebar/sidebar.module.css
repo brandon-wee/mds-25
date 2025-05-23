@@ -135,7 +135,7 @@
 .username {
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text);
 }
 
 .userRole {
@@ -204,7 +204,7 @@
   margin: 0 0 4px;
   font-size: 15px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -218,7 +218,7 @@
   padding: 2px 6px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
-  color: #bbb;
+  color: var(--textSoft);
 }
 
 /* Admin badge styling */

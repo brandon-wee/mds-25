@@ -36,28 +36,34 @@
   --darkBg: #000;
 }
 
-/* Light theme */
+/* Light theme - Complementing dark theme colors */
 :root.light {
-  --bg: #ffffff;
-  --bgSoft: #f0f2f5;
-  --bgDark: #e5e7eb;
-  --text: #111827;
-  --textSoft: #4b5563;
-  --border: #e5e7eb;
-  --hoverColor: #e5e7eb;
+  /* Base colors that complement dark theme */
+  --bg: #f0f4fa;
+  --bgSoft: #e1e8f5;
+  --bgDark: #d0d9eb;
+  --text: #151c2c;
+  --textSoft: #3a4a6b;
+  --border: #c0cbd9;
+  --hoverColor: #d0d9eb;
   
-  --primary: #3b82f6;
-  --primaryHover: #2563eb;
-  --secondary: #6366f1;
-  --error: #ef4444;
-  --errorHover: #dc2626;
-  --success: #22c55e;
-  --successHover: #16a34a;
+  /* Status colors - Same hue family as dark theme */
+  --primary: #4747d1;
+  --primaryHover: #3939b3;
+  --secondary: #6868db;
+  --error: #e04040;
+  --errorHover: #c53030;
+  --success: #40c040; 
+  --successHover: #35a035;
+  --warning: #e67e22;
+  --warningHover: #d35400;
+  --disabled: #a0a0a0;
   
-  --bgPrimary: rgba(59, 130, 246, 0.1);
-  --bgSuccess: rgba(34, 197, 94, 0.1);
-  --bgDanger: rgba(239, 68, 68, 0.1);
-  --bgWarning: rgba(243, 156, 18, 0.1);
+  /* Background variations - adjusted opacity for light background */
+  --bgPrimary: rgba(71, 71, 209, 0.15);
+  --bgSuccess: rgba(64, 192, 64, 0.15);
+  --bgDanger: rgba(224, 64, 64, 0.15);
+  --bgWarning: rgba(230, 126, 34, 0.15);
 }
 
 * {
