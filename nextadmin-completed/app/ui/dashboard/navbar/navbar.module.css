@@ -6,13 +6,20 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
 }
 
 .title {
-  color: var(--text);
   font-weight: bold;
+  color: var(--text);
   text-transform: capitalize;
+  font-size: 24px;
+  margin: 0;
 }
 
 .menu {
@@ -21,126 +28,263 @@
   gap: 20px;
 }
 
-.search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: --bgsoft;
-  border-radius: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-.search:focus-within {
-  box-shadow: 0 0 0 2px rgba(93, 87, 201, 0.5);
-}
-
-.input {
-  background-color: transparent;
-  border: none;
-  color: var(--text);
-  outline: none;
-  min-width: 150px;
-}
-
 .icons {
   display: flex;
   gap: 20px;
   align-items: center;
 }
 
-.icon {
-  color: var(--textSoft);
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.icon:hover {
-  color: var(--primary, #5555ff);
-}
-
-.icons > * {
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.icons > *:hover {
-  color: #5d57c9;
-}
-
-/* For any notification badges */
-.notification {
+.iconWrapper {
   position: relative;
-}
-
-.badge {
-  background-color: var(--primary, #5555ff);
-  color: white;
-  width: 16px;
-  height: 16px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.iconWrapper:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.icon {
+  color: var(--text);
+  transition: color 0.3s;
+}
+
+.iconWrapper:hover .icon {
+  color: teal;
+}
+
+.themeToggle {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.themeToggle:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.themeIcon {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: 5px;
+  right: 5px;
+  background-color: #ff3d57;
+  color: white;
+  font-size: 10px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 61, 87, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(255, 61, 87, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 61, 87, 0);
+  }
 }
 
 .notificationsPanel {
   position: absolute;
-  top: 100%;
+  top: 50px;
   right: 0;
-  width: 300px;
-  max-height: 400px;
+  background-color: var(--bg);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  max-height: 500px;
   overflow-y: auto;
-  background-color: var(--bgSoft);
-  color: var(--text);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 1rem;
   z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notificationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notificationHeader h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.clearAllBtn {
+  background: none;
+  border: none;
+  color: teal;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.clearAllBtn:hover {
+  color: #00cccc;
+  text-decoration: underline;
+}
+
+.noNotifications {
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--textSoft);
+  font-style: italic;
+}
+
+.notificationCategory {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notificationCategory h4 {
+  margin: 0;
+  padding: 0 20px 10px;
+  color: var(--textSoft);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .notification {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  padding: 15px 20px;
   position: relative;
+  border-left: 4px solid transparent;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background-color 0.3s;
 }
 
-.notification:last-child {
-  border-bottom: none;
+.notification:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.notification.connected {
+  border-left-color: #4caf50;
+}
+
+.notification.disconnected {
+  border-left-color: #f44336;
+}
+
+.notification.unknown {
+  border-left-color: #ff9800;
+}
+
+.notification.default {
+  border-left-color: #2196f3;
+}
+
+.notifIconSuccess {
+  color: #4caf50;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notifIconError {
+  color: #f44336;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notifIconWarning {
+  color: #ff9800;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notifIconInfo {
+  color: #2196f3;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notificationContent {
+  flex: 1;
 }
 
 .notification p {
-  margin: 0;
-  font-size: 0.9rem;
+  margin: 0 0 5px;
+  color: var(--text);
+  font-size: 14px;
 }
 
 .notification small {
   color: var(--textSoft);
-  font-size: 0.8rem;
+  font-size: 12px;
 }
 
 .closeNotif {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  color: var(--textSoft);
   cursor: pointer;
-  opacity: 0.6;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s, color 0.3s;
 }
 
-.closeNotif:hover {
+.notification:hover .closeNotif {
   opacity: 1;
 }
 
-.themeIcon {
-  cursor: pointer;
-  transition: transform 0.3s ease;
+.closeNotif:hover {
+  color: #ff3d57;
 }
 
-.themeIcon:hover {
-  transform: rotate(30deg);
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .notificationsPanel {
+    width: 300px;
+    right: -10px;
+  }
+
+  .notification p {
+    font-size: 13px;
+  }
 }
