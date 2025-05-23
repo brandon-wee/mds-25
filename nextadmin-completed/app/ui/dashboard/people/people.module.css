@@ -6,18 +6,17 @@
   max-width: 100%;
   overflow-x: auto;
   padding: 20px;
-  background-color: var(--bg);
-  border-radius: 10px;
+  background-color: var(--bgSoft);
+  border-radius: var(--borderRadius);
   margin-top: 20px;
+  box-shadow: var(--boxShadow);
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--bgSoft);
-  padding-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .title {
@@ -41,15 +40,15 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .refreshButton {
-  background-color: #4caf50;
+  background-color: var(--primary);
 }
 
 .refreshButton:hover {
-  background-color: #3d8b40;
+  background-color: var(--primaryHover);
 }
 
 .clearButton {
@@ -61,218 +60,25 @@
 }
 
 .refreshButton:disabled, .clearButton:disabled {
-  background-color: #cccccc;
+  background-color: var(--disabled);
   cursor: not-allowed;
 }
 
 .filters {
   display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
   align-items: center;
-  background-color: var(--bgSoft);
-  padding: 10px 15px;
-  border-radius: 8px;
-  align-items: center;
-  gap: 20px;
+  justify-content: space-between;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .filter {
   padding: 8px 12px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
+  border-radius: var(--borderRadius);
   background-color: var(--bg);
   color: var(--text);
-  min-width: 150px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-  flex: 1;
-  max-width: 200px;
-}
-
-.filter:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(85, 85, 255, 0.1);
-}
-
-/* Table styles */
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background-color: var(--bg);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.table thead tr {
-  background-color: var(--bgSoft);
-  height: 50px;
-  font-weight: 500;
-  color: var(--textSoft);
-}
-
-.table thead td {
-  padding: 12px 15px;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-}
-
-.table tbody tr {
-  height: 60px;
-  border-bottom: 1px solid var(--bgSoft);
-  transition: background-color 0.2s;
-}
-
-.table tbody tr:hover {
-  background-color: rgba(240, 240, 255, 0.05);
-}
-
-.table tbody tr:last-child {
-  border-bottom: none;
-}
-
-.table td {
-  padding: 12px 15px;
-}
-
-/* Person styling */
-.person {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.personImage {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid white;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Status styling */
-.statusBadge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.known {
-  background-color: rgba(25, 135, 84, 0.1);
-  color: #198754;
-  border: 1px solid rgba(25, 135, 84, 0.2);
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-}
-
-.known .personImage {
-  border-color: #198754;
-}
-
-.unknown {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  border: 1px solid rgba(220, 53, 69, 0.2);
-}
-
-.unknown .personImage {
-  border-color: #dc3545;
-}
-
-/* Row styles based on status */
-tr.known {
-  background-color: rgba(25, 135, 84, 0.03);
-}
-
-tr.unknown {
-  background-color: rgba(220, 53, 69, 0.03);
-  background-color: rgba(255, 160, 0, 0.03);
-}
-
-/* Loading and no results styles */
-.loadingIndicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: var(--textSoft);
-  font-size: 16px;
-}
-
-.noResults {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: var(--textSoft);
-  text-align: center;
-}
-
-.noResults svg {
-  margin-bottom: 16px;
-  opacity: 0.6;
-}
-
-/* Spinning animation */
-.spinning {
-  animation: spin 1s infinite linear;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Admin badge styling */
-.adminBadge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #9c27b0;
-  font-weight: 500;
-}
-
-/* Active status badges */
-.activeBadge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-}
-
-.inactiveBadge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  background-color: rgba(158, 158, 158, 0.1);
-  color: #757575;
 }
 
 .lastUpdated {
@@ -282,68 +88,134 @@ tr.unknown {
   font-style: italic;
 }
 
-/* Debug info styling */
-.debugInfo {
-  margin-left: auto;
-  color: var(--textSoft);
-  font-size: 0.8rem;
-  opacity: 0.7;
+/* Table styles */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* New styles */
-.neverDetected {
-  color: var(--textSoft);
-  font-style: italic;
+.table th, .table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
 }
 
-.personId {
-  font-size: 0.8rem;
+.table thead tr {
+  background-color: var(--bg);
+}
+
+.table th {
   color: var(--textSoft);
-  margin-top: 2px;
+  font-weight: 500;
+}
+
+.table tbody tr {
+  transition: var(--transition);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg);
+}
+
+/* Person styling */
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.personImage {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bgSoft);
+}
+
+/* Status styling */
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBadge.known {
+  background-color: var(--bgSuccess);
+  color: var(--success);
+}
+
+.statusBadge.unknown {
+  background-color: var(--bgWarning);
+  color: var(--warning);
+}
+
+/* Admin badge styling */
+.adminBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Active status badges */
+.activeBadge {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.inactiveBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--disabled);
+}
+
+/* Loading and no results styles */
+.loadingIndicator {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--textSoft);
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--textSoft);
+  gap: 10px;
+}
+
+.noResults svg {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+/* Spinning animation */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Row styling based on status */
+.table tbody tr.known {
+  border-left: 3px solid var(--success);
+}
+
+.table tbody tr.unknown {
+  border-left: 3px solid var(--warning);
 }
 
 /* Debug section styles */
 .debugSection {
   margin-top: 20px;
   padding: 15px;
-  background-color: rgba(0,0,0,0.1);
-  border-radius: 5px;
-}
-
-.debugInfo {
-  margin-top: 20px;
-  font-size: 0.8em;
-  color: #666;
-}
-
-.debugInfo pre {
-  background: rgba(0,0,0,0.1);
-  padding: 10px;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-.errorContainer {
-  margin: 20px 0;
-  padding: 15px;
-  background-color: rgba(255,0,0,0.1);
-  border-radius: 5px;
-  color: #d8000c;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter {
-    max-width: 100%;
-  }
-  
-  .table {
-    display: block;
-    overflow-x: auto;
-  }
+  background-color: var(--bgSoft);
+  border-radius: var(--borderRadius);
 }

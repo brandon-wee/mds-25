@@ -4,6 +4,7 @@ import styles from './chart.module.css'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { useState, useEffect } from 'react';
 import { getAllUsers } from '@/app/lib/actions';
+import { MdInsights } from 'react-icons/md';
 
 // Enhanced bar chart colors with better contrast and visual appeal
 const BAR_COLORS = [
@@ -96,13 +97,22 @@ const Chart = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.title}>User Recognition Confidence</h2>
-        <p className={styles.subtitle}>
-          Latest confidence levels for all detected users
-        </p>
+        <div className={styles.titleContainer}>
+          <MdInsights size={24} className={styles.titleIcon} />
+          <div>
+            <h2 className={styles.title}>User Recognition Confidence</h2>
+            <p className={styles.subtitle}>
+              Latest confidence levels for all detected users
+            </p>
+          </div>
+        </div>
+        <div className={styles.lastUpdated}>
+          Updated: {new Date().toLocaleTimeString()}
+        </div>
       </div>
+      
       <div className={styles.chartWrapper}>
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={500}>
           <BarChart
             data={chartData}
             margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
@@ -112,27 +122,34 @@ const Chart = () => {
               dataKey="name" 
               angle={-45} 
               textAnchor="end" 
-              height={70} 
-              tick={{fontSize: 12, fill: 'var(--textSoft)'}} 
+              height={80} 
+              tick={{fontSize: 13, fill: 'var(--textSoft)'}} 
+              tickLine={{ stroke: 'var(--border)' }}
             />
             <YAxis 
               domain={[0, 1]} 
               tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
               tick={{fill: 'var(--textSoft)'}}
+              tickLine={{ stroke: 'var(--border)' }}
+              axisLine={{ stroke: 'var(--border)' }}
               label={{ 
                 value: 'Confidence Level', 
                 angle: -90, 
                 position: 'insideLeft',
-                style: {fill: 'var(--textSoft)'}
+                style: {fill: 'var(--textSoft)', fontSize: 13}
               }}
             />
             <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
-            <Legend formatter={(value) => <span style={{color: 'var(--text)'}}>{value}</span>} />
+            <Legend 
+              formatter={(value) => <span style={{color: 'var(--text)', fontSize: '14px'}}>{value}</span>}
+              wrapperStyle={{ paddingTop: 15 }}
+            />
             <Bar 
               dataKey="confidence" 
               name="Confidence Level" 
-              radius={[4, 4, 0, 0]}
-              animationDuration={800}
+              radius={[6, 6, 0, 0]}
+              animationDuration={1200}
+              animationEasing="ease-in-out"
             >
               {chartData.map((entry, index) => (
                 <Cell 

@@ -1,95 +1,63 @@
 :root {
-  /* Light theme */
-  --bg: #fff;
-  --bgSoft: #f8f9fa;
-  --bgDark: #eaeaea;
-  --text: #333;
-  --textSoft: #666;
-  --border: #ddd;
+  /* Base colors and theme settings */
+  --bg: #151c2c;
+  --bgSoft: #182237;
+  --bgDark: #111827;
+  --text: white;
+  --textSoft: #b7bac1;
+  --border: #2e374a;
   
-  --primary: #3498db;
-  --primaryHover: #2980b9;
-  --success: #27ae60;
-  --successHover: #2ecc71;
-  --danger: #e74c3c;
-  --dangerHover: #c0392b;
-  --warning: #e67e22;
-  --warningHover: #f39c12;
-  --disabled: #95a5a6;
+  /* UI Components */
+  --borderRadius: 8px;
+  --boxShadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+  --hoverColor: #2e374a;
   
-  --bgPrimary: #eaf2f8;
-  --bgSuccess: #e8f8f5;
-  --bgDanger: #fdecea;
-  
-  /* Camera specific */
-  --dark: #222;
-  --darkBg: #1a1a1a;
-}
-
-/* Dark theme variables */
-[data-theme="dark"] {
-  --bg: #1a1a1a;
-  --bgSoft: #2c2c2c;
-  --bgDark: #333;
-  --text: #f8f8f8;
-  --textSoft: #aaa;
-  --border: #444;
-  
-  /* Colors stay mostly the same for buttons */
-  --primary: #3498db;
-  --primaryHover: #2980b9;
-  --success: #2ecc71;
-  --successHover: #27ae60;
-  --danger: #e74c3c;
-  --dangerHover: #c0392b;
+  /* Status colors */
+  --primary: #5555ff;
+  --primaryHover: #4040e0;
+  --secondary: #7878ff;
+  --error: #ff5555;
+  --errorHover: #e04040;
+  --success: #55ff55; 
+  --successHover: #40e040;
   --warning: #f39c12;
   --warningHover: #e67e22;
   --disabled: #777;
   
-  --bgPrimary: rgba(52, 152, 219, 0.2);
-  --bgSuccess: rgba(46, 204, 113, 0.2);
-  --bgDanger: rgba(231, 76, 60, 0.2);
+  /* Background variations */
+  --bgPrimary: rgba(85, 85, 255, 0.2);
+  --bgSuccess: rgba(85, 255, 85, 0.2);
+  --bgDanger: rgba(255, 85, 85, 0.2);
+  --bgWarning: rgba(243, 156, 18, 0.2);
   
   /* Camera specific */
   --dark: #111;
   --darkBg: #000;
 }
 
-:root {
-  /* Dark theme (default) */
-  --bg: #151c2c;
-  --bgSoft: #182237;
-  --text: white;
-  --textSoft: #b7bac1;
-  --border: #2e374a;
-  --borderRadius: 8px;
-  --boxShadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-  --hoverColor: #2e374a;
-  --primary: #5555ff;
-  --secondary: #7878ff;
-  --error: #ff5555;
-  --success: #55ff55;
-}
-
 /* Light theme */
 :root.light {
   --bg: #ffffff;
   --bgSoft: #f0f2f5;
+  --bgDark: #e5e7eb;
   --text: #111827;
   --textSoft: #4b5563;
   --border: #e5e7eb;
-  --borderRadius: 8px;
-  --boxShadow: 0 4px 6px rgb(255, 255, 255);
-  --transition: all 0.3s ease;
   --hoverColor: #e5e7eb;
+  
   --primary: #3b82f6;
+  --primaryHover: #2563eb;
   --secondary: #6366f1;
   --error: #ef4444;
+  --errorHover: #dc2626;
   --success: #22c55e;
-  --boxShadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-  --hoverColor: #e5e7eb;
+  --successHover: #16a34a;
+  
+  --bgPrimary: rgba(59, 130, 246, 0.1);
+  --bgSuccess: rgba(34, 197, 94, 0.1);
+  --bgDanger: rgba(239, 68, 68, 0.1);
+  --bgWarning: rgba(243, 156, 18, 0.1);
 }
 
 * {

@@ -1,107 +1,233 @@
 .container {
-  position: fixed;
-  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .item {
-  background: linear-gradient(to top, #182237, #253352);
-  padding: 20px 24px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  background-color: var(--bgSoft);
+  padding: 20px;
+  border-radius: var(--borderRadius);
   position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  box-shadow: var(--boxShadow);
 }
 
-.bgContainer {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 50%;
-  height: 50%;
+.item:hover {
+  transform: translateY(-2px);
 }
 
-.bg {
-  object-fit: contain;
-  opacity: 0.2;
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
-.text {
+.header .title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
 }
 
-.notification {
-  font-weight: bold;
-}
-
-.subtitle {
-  color: var(--textSoft);
-  font-weight: 500;
-  font-size: 12px;
-}
-
-.desc {
-  color: var(--textSoft);
-  font-size: 14px;
-}
-
-.button {
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: max-content;
-  background-color: #5d57c9;
-  color: white;
+.refreshBtn {
+  background: transparent;
   border: none;
-  border-radius: 5px;
+  color: var(--textSoft);
   cursor: pointer;
-}
-
-.chartContainer {
-  width: 100%;
-  margin: 15px 0;
-}
-
-.barChartItem {
+  padding: 5px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  justify-content: center;
+  transition: var(--transition);
 }
 
-.modelName {
-  min-width: 90px;
+.refreshBtn:hover {
+  background-color: var(--hoverColor);
+  color: var(--text);
+}
+
+.refreshBtn.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.statusItem:last-child {
+  border-bottom: none;
+}
+
+.statusLabel {
+  color: var(--textSoft);
   font-size: 14px;
-  margin-right: 10px;
 }
 
-.barContainer {
-  flex: 1;
-  height: 24px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+.statusValue {
+  font-weight: 500;
   display: flex;
   align-items: center;
-  overflow: hidden;
-  position: relative;
+  gap: 5px;
 }
 
-.bar {
-  height: 100%;
-  background-color: #3b82f6;
-  border-radius: 4px;
+.statusIcon {
+  vertical-align: middle;
 }
 
-.accuracy {
-  position: absolute;
-  right: 8px;
-  font-size: 12px;
-  font-weight: bold;
-  color: #333;
+.online {
+  color: var(--success);
+}
+
+.offline {
+  color: var(--error);
 }
 
 .error {
-  color: #e74c3c;
+  color: var(--error);
+}
+
+.ok {
+  color: var(--success);
+}
+
+.progressBar {
+  height: 6px;
+  background-color: var(--border);
+  border-radius: 3px;
+  width: 100%;
+  margin: 0 10px;
+  flex: 1;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: var(--transition);
+}
+
+.storageText {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.statsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.statsPeriod h4 {
+  margin: 0 0 8px 0;
   font-size: 14px;
-  margin-bottom: 10px;
+  color: var(--textSoft);
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--textSoft);
+}
+
+.chartContainer {
+  height: 300px;
+  width: 300px;
+  position: relative;
+  margin-top: 10px;
+
+}
+
+.loadingChart, .errorChart, .noDataChart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--bg);
+  font-size: 14px;
+}
+
+.errorChart {
+  color: var(--error);
+}
+
+.tipContent {
+  padding: 10px;
+  border-left: 3px solid var(--primary);
+  background-color: var(--bgPrimary);
+  border-radius: 0 var(--borderRadius) var(--borderRadius) 0;
+}
+
+.tipContent p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.headerIcon {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.apiDetails {
+  margin: -5px 0 10px 0;
+  padding: 0 5px;
+  font-size: 12px;
+  color: var(--textSoft);
+  border-left: 3px solid var(--border);
+  margin-left: 10px;
+}
+
+.apiEndpoint {
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apiMessage {
+  padding: 3px 6px;
+  border-radius: var(--borderRadius);
+  font-size: 11px;
+}
+
+.apiMessage.ok {
+  background-color: var(--bgSuccess);
+  color: var(--success);
+}
+
+.apiMessage.error {
+  background-color: var(--bgDanger);
+  color: var(--error);
 }
