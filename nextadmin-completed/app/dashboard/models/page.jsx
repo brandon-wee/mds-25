@@ -13,63 +13,97 @@ const ModelsPage = async ({ searchParams }) => {
 
   return (
     <div className={styles.container}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.title}>Model Management</h1>
+        <p className={styles.subtitle}>Manage your machine learning models and their deployments</p>
+      </div>
+      
       <div className={styles.top}>
         <Search placeholder="Search for a model..." />
         <Link href="/dashboard/models/add">
-          <button className={styles.addButton}>Add New</button>
+          <button className={styles.addButton}>
+            <span className={styles.addIcon}>+</span> Add New Model
+          </button>
         </Link>
       </div>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <td>Title</td>
-            <td>Description</td>
-            <td>Accuracy</td>
-            <td>Response Time</td>
-            <td>Edge Device</td>
-            <td>Size</td>
-            <td>Action</td>
-          </tr>
-        </thead>
-        <tbody>
-          {models.map((model) => (
-            <tr key={model.id}>              <td>
-                <div className={styles.product}>
-                  <Image
-                    src={model.edgeDevice === "nicla" ? "/arduino-icon.png" : "/raspberry-icon.png"}
-                    alt={model.edgeDevice === "nicla" ? "Arduino Nicla" : "Raspberry Pi"}
-                    width={40}
-                    height={40}
-                    className={styles.productImage}
-                  />
-                  {model.title}
-                </div>
-              </td>
-              <td>{model.desc}</td>
-              <td>{model.accuracy}%</td>
-              <td>{model.responseTime} ms</td>
-              <td>{model.edgeDevice}</td>
-              <td>{model.size}</td>
-              <td>
-                <div className={styles.buttons}>
-                  <Link href={`/dashboard/models/${model.id}`}>
-                    <button className={`${styles.button} ${styles.view}`}>
-                      View
-                    </button>
-                  </Link>
-                  <form action={deleteModel}>
-                    <input type="hidden" name="id" value={model.id} />
-                    <button className={`${styles.button} ${styles.delete}`}>
-                      Delete
-                    </button>
-                  </form>
-                </div>
-              </td>
+      
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Model Details</th>
+              <th>Description</th>
+              <th>Metrics</th>
+              <th>Device</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <Pagination count={count} />
+          </thead>
+          <tbody>
+            {models.map((model) => (
+              <tr key={model.id}>
+                <td>
+                  <div className={styles.modelInfo}>
+                    <Image
+                      src={model.edgeDevice === "nicla" ? "/arduino-icon.png" : "/raspberry-icon.png"}
+                      alt={model.edgeDevice === "nicla" ? "Arduino Nicla" : "Raspberry Pi"}
+                      width={40}
+                      height={40}
+                      className={styles.modelImage}
+                    />
+                    <div className={styles.modelMeta}>
+                      <span className={styles.modelTitle}>{model.title}</span>
+                      <span className={`${styles.modelCategory} ${styles[model.cat]}`}>{model.cat}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className={styles.descriptionCell}>
+                  <div className={styles.truncateText}>{model.desc}</div>
+                </td>
+                <td>
+                  <div className={styles.metrics}>
+                    <div className={styles.metric}>
+                      <span className={styles.metricLabel}>Accuracy:</span>
+                      <span className={styles.metricValue}>{model.accuracy}%</span>
+                    </div>
+                    <div className={styles.metric}>
+                      <span className={styles.metricLabel}>Response:</span>
+                      <span className={styles.metricValue}>{model.responseTime} ms</span>
+                    </div>
+                    <div className={styles.metric}>
+                      <span className={styles.metricLabel}>Size:</span>
+                      <span className={styles.metricValue}>{model.size} MB</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span className={`${styles.deviceTag} ${model.edgeDevice === "nicla" ? styles.nicla : styles.raspberry}`}>
+                    {model.edgeDevice === "nicla" ? "Arduino Nicla" : "Raspberry Pi"}
+                  </span>
+                </td>
+                <td>
+                  <div className={styles.buttons}>
+                    <Link href={`/dashboard/models/${model.id}`}>
+                      <button className={`${styles.button} ${styles.view}`}>
+                        View
+                      </button>
+                    </Link>
+                    <form action={deleteModel}>
+                      <input type="hidden" name="id" value={model.id} />
+                      <button className={`${styles.button} ${styles.delete}`}>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      <div className={styles.paginationWrapper}>
+        <Pagination count={count} />
+      </div>
     </div>
   );
 };

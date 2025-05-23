@@ -55,35 +55,64 @@ const SingleUserPage = async ({ params }) => {
   return (
     <div className={styles.container}>
       <div className={styles.infoContainer}>
+        <h2 className={styles.title}>User Profile</h2>
         <div className={styles.imgContainer}>
-          <Image src={user.img || "/noavatar.png"} alt="" fill />
+          <Image src={user.img || "/noavatar.png"} alt={`${user.username}'s profile`} fill className={styles.userImage} />
         </div>
-        {user.username}
+        <div className={styles.userInfo}>
+          <h3>{user.username}</h3>
+          <p className={styles.userRole}>{user.isAdmin ? "Administrator" : "Regular User"}</p>
+          <p className={styles.userStatus}>Status: <span className={user.isActive ? styles.active : styles.inactive}>{user.isActive ? "Active" : "Inactive"}</span></p>
+        </div>
       </div>
+      
       <div className={styles.formContainer}>
+        <h2 className={styles.title}>Edit User Information</h2>
         <form action={updateUser} className={styles.form}>
           <input type="hidden" name="id" value={user.id}/>
-          <label>Username</label>
-          <input type="text" name="username" placeholder={user.username} />
-          <label>Email</label>
-          <input type="email" name="email" placeholder={user.email} />
-          <label>Password</label>
-          <input type="password" name="password" />
-          <label>Phone</label>
-          <input type="text" name="phone" placeholder={user.phone} />
-          <label>Address</label>
-          <textarea type="text" name="address" placeholder={user.address} />
-          <label>Is Admin?</label>
-          <select name="isAdmin" id="isAdmin">
-            <option value={true} selected={user.isAdmin}>Yes</option>
-            <option value={false} selected={!user.isAdmin}>No</option>
-          </select>
-          <label>Is Active?</label>
-          <select name="isActive" id="isActive">
-            <option value={true} selected={user.isActive}>Yes</option>
-            <option value={false} selected={!user.isActive}>No</option>
-          </select>
-          <button>Update</button>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="username">Username</label>
+            <input type="text" id="username" name="username" placeholder={user.username} />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Email</label>
+            <input type="email" id="email" name="email" placeholder={user.email} />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="phone">Phone</label>
+            <input type="text" id="phone" name="phone" placeholder={user.phone || "Not provided"} />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="isAdmin">Admin Status</label>
+            <select name="isAdmin" id="isAdmin">
+              <option value={true} selected={user.isAdmin}>Admin</option>
+              <option value={false} selected={!user.isAdmin}>Regular User</option>
+            </select>
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="isActive">Account Status</label>
+            <select name="isActive" id="isActive">
+              <option value={true} selected={user.isActive}>Active</option>
+              <option value={false} selected={!user.isActive}>Inactive</option>
+            </select>
+          </div>
+          
+          <div className={styles.formGroupFull}>
+            <label htmlFor="address">Address</label>
+            <textarea id="address" name="address" placeholder={user.address || "Enter address"} rows="4"></textarea>
+          </div>
+          
+          <button type="submit" className={styles.submitButton}>Update User</button>
         </form>
       </div>
     </div>

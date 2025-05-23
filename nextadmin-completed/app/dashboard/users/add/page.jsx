@@ -2,40 +2,69 @@ import { addUser } from "@/app/lib/actions";
 import styles from "@/app/ui/dashboard/users/addUser/addUser.module.css";
 
 const AddUserPage = () => {
-
   return (
     <div className={styles.container}>
+      <h1 className={styles.title}>Add New User</h1>
       <form action={addUser} className={styles.form}>
-        <input type="text" placeholder="username" name="username" required />
-        <input type="email" placeholder="email" name="email" required />
-        <input
-          type="password"
-          placeholder="password"
-          name="password"
-          required
-        />
-        <input type="phone" placeholder="phone" name="phone" />
-        <select name="isAdmin" id="isAdmin">
-          <option value={false}>
-            Is Admin?
-          </option>
-          <option value={true}>Yes</option>
-          <option value={false}>No</option>
-        </select>
-        <select name="isActive" id="isActive">
-          <option value={true}>
-            Is Active?
-          </option>
-          <option value={true}>Yes</option>
-          <option value={false}>No</option>
-        </select>
-        <textarea
-          name="address"
-          id="address"
-          rows="16"
-          placeholder="Address"
-        ></textarea>
-        <button type="submit">Submit</button>
+        <div className={styles.formGroup}>
+          <label htmlFor="username">Username</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="isAdmin">Admin Status</label>
+          <select name="isAdmin" id="isAdmin">
+            <option value="" disabled>
+              Select admin status
+            </option>
+            <option value={true}>Admin</option>
+            <option value={false} selected>
+              Regular User
+            </option>
+          </select>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="isActive">Account Status</label>
+          <select name="isActive" id="isActive">
+            <option value="" disabled>
+              Select account status
+            </option>
+            <option value={true} selected>
+              Active
+            </option>
+            <option value={false}>Inactive</option>
+          </select>
+        </div>
+
+        <div className={styles.formGroupFull}>
+          <label htmlFor="address">Address</label>
+          <textarea
+            name="address"
+            id="address"
+            rows="6"
+            placeholder="Enter user address"
+          ></textarea>
+        </div>
+
+        <button type="submit" className={styles.submitButton}>
+          Add User
+        </button>
       </form>
     </div>
   );
