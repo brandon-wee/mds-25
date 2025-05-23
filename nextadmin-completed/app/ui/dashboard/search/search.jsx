@@ -23,15 +23,35 @@ const Search = ({ placeholder }) => {
     replace(`${pathname}?${params}`);
   }, 300);
 
+  const clearSearch = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("q");
+    params.set("page", 1);
+    replace(`${pathname}?${params}`);
+    document.querySelector(`.${styles.input}`).value = "";
+  };
+
+  const isSearchActive = searchParams.get("q");
+
   return (
-    <div className={styles.container}>
-      <MdSearch />
+    <div className={`${styles.container} ${isSearchActive ? styles.active : ""}`}>
+      <MdSearch className={styles.searchIcon} />
       <input
         type="text"
         placeholder={placeholder}
         className={styles.input}
         onChange={handleSearch}
+        defaultValue={searchParams.get("q") || ""}
       />
+      {isSearchActive && (
+        <button 
+          onClick={clearSearch} 
+          className={styles.clearButton}
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 };
