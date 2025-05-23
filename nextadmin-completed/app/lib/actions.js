@@ -366,50 +366,46 @@ export const resetPassword = async (formData) => {
 // Maximum number of confidence history entries to keep per user
 const MAX_CONFIDENCE_HISTORY = 100;
 
-// Update user confidence level and add to history
+// Update a user's confidence history with a new detection
 export const updateUserConfidence = async (username, confidence) => {
   try {
-    await connectToDB();
+    // Connect to database
+    connectToDB();
     
     // Find the user by username
     const user = await User.findOne({ username });
     
     if (!user) {
-      console.error(`User not found: ${username}`);
+      console.error(`User ${username} not found when updating confidence`);
       return null;
     }
     
+    // Current timestamp
     const now = new Date();
-    
-    // Update the user's last confidence and detection time
-    user.lastConfidence = confidence;
-    user.lastDetectedAt = now;
     
     // Initialize confidenceHistory if it doesn't exist
     if (!user.confidenceHistory) {
-      user.confidenceHistory = [];
+      user.confidenceHistory = {
+        confidence: [],
+        timestamp: []
+      };
     }
     
-    // Add new entry to confidenceHistory array
-    user.confidenceHistory.push({
-      confidence: confidence,
-      timestamp: now
-    });
+    // Add the new confidence value and timestamp
+    user.confidenceHistory.confidence.push(confidence);
+    user.confidenceHistory.timestamp.push(now);
     
-    // Trim history if it exceeds the maximum size
-    if (user.confidenceHistory.length > MAX_CONFIDENCE_HISTORY) {
-      user.confidenceHistory = user.confidenceHistory.slice(-MAX_CONFIDENCE_HISTORY);
-    }
+    // Update lastConfidence and lastDetectedAt to reflect the current detection
+    user.lastConfidence = confidence;
+    user.lastDetectedAt = now;
     
     // Save the updated user
     await user.save();
-    console.log(`Updated ${username} confidence history, total entries: ${user.confidenceHistory.length}`);
     
-    // Return the updated user
     return user;
-  } catch (err) {
-    console.error(`Error updating user confidence for ${username}:`, err);
-    throw new Error(`Failed to update user confidence: ${err.message}`);
+  } catch (error) {
+    console.error("Error updating user confidence:", error);
+    throw error;
   }
 };
 
@@ -509,79 +505,50 @@ export const getAllUsersWithConfidenceHistory = async (timeRange = 'minutes') =>
 // Maximum number of unknown persons to keep in the database
 const MAX_UNKNOWN_PERSONS = 100;
 
-// Save unknown person detection with better handling of timestamps
-export const saveUnknownPerson = async (personData) => {
+// Save an unknown person detection to database
+export const saveUnknownPerson = async (person) => {
   try {
-    await connectToDB();
+    connectToDB();
     
-    // Check if the name starts with "Unknown"
-    if (!personData.name || !personData.name.startsWith("Unknown")) {
-      throw new Error("Not an unknown person");
-    }
+    // Extract data from person object
+    const { name, similarity, crop, bbox, lastDetectedAt } = person;
     
-    // Format data for the database
-    const unknownData = {
-      name: personData.name,
-      faceImage: personData.crop || null,
-      lastConfidence: personData.similarity || 0,
-      bbox: personData.bbox || null,
-      lastDetectedAt: personData.lastDetectedAt || new Date()
-    };
-    
-    // Try to find existing record with similar name
-    let existingPerson = await UnknownPerson.findOne({
-      name: personData.name
-    });
+    // Try to find if this unknown person already exists with the same name
+    const existingPerson = await UnknownPerson.findOne({ name });
     
     if (existingPerson) {
       // Update existing record
-      existingPerson.lastConfidence = unknownData.lastConfidence;
-      existingPerson.lastDetectedAt = unknownData.lastDetectedAt;
+      existingPerson.lastConfidence = similarity;
+      existingPerson.lastDetectedAt = lastDetectedAt || new Date();
       existingPerson.detectionCount += 1;
       
-      // Only update face image if provided and it's better quality (determined by confidence)
-      if (unknownData.faceImage && (
-          !existingPerson.faceImage || 
-          unknownData.lastConfidence > existingPerson.lastConfidence
-      )) {
-        existingPerson.faceImage = unknownData.faceImage;
+      // Update face image only if we have a better one (higher confidence)
+      if (similarity > existingPerson.lastConfidence && crop) {
+        existingPerson.faceImage = crop;
       }
       
-      // Update bbox if provided
-      if (unknownData.bbox) {
-        existingPerson.bbox = unknownData.bbox;
+      if (bbox) {
+        existingPerson.bbox = bbox;
       }
       
       await existingPerson.save();
-      console.log(`Updated unknown person ${personData.name}, detection #${existingPerson.detectionCount}`);
       return existingPerson;
     } else {
       // Create new unknown person record
-      const newUnknown = new UnknownPerson(unknownData);
-      await newUnknown.save();
-      console.log(`Created new unknown person ${personData.name}`);
+      const newUnknownPerson = new UnknownPerson({
+        name,
+        faceImage: crop || null,
+        lastConfidence: similarity,
+        lastDetectedAt: lastDetectedAt || new Date(),
+        bbox: bbox || null
+      });
       
-      // Limit the number of unknown persons in the database
-      const count = await UnknownPerson.countDocuments();
-      if (count > MAX_UNKNOWN_PERSONS) {
-        // Delete oldest unknown persons
-        const oldest = await UnknownPerson.find()
-          .sort({ lastDetectedAt: 1 })
-          .limit(count - MAX_UNKNOWN_PERSONS);
-        
-        if (oldest.length > 0) {
-          await UnknownPerson.deleteMany({
-            _id: { $in: oldest.map(item => item._id) }
-          });
-          console.log(`Deleted ${oldest.length} old unknown person records to limit database size`);
-        }
-      }
-      
-      return newUnknown;
+      await newUnknownPerson.save();
+      return newUnknownPerson;
     }
-  } catch (err) {
-    console.error("Error saving unknown person:", err);
-    throw new Error(`Failed to save unknown person: ${err.message}`);
+  } catch (error) {
+    console.error("Error saving unknown person:", error);
+    throw error;
   }
 };
 
