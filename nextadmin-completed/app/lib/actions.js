@@ -331,8 +331,47 @@ export const registerUser = async (formData) => {
     return { success: true };
   } catch (err) {
     console.error("[ACTIONS ERROR]", err);
+    
+    // Handle specific MongoDB duplicate key errors
+    if (err.code === 11000) {
+      return { success: false, message: "User with this information already exists" };
+    }
+    
     return { success: false, message: "Failed to register: " + err.message };
   }
+};
+
+// Migration function to fix confidenceHistory structure
+const migrateUserConfidenceHistory = async (user) => {
+  if (user.confidenceHistory && 
+      user.confidenceHistory.confidence && 
+      Array.isArray(user.confidenceHistory.confidence)) {
+    
+    console.log(`Migrating confidence history for user: ${user.username}`);
+    
+    // Convert old structure to new structure
+    const newHistory = [];
+    const confidences = user.confidenceHistory.confidence || [];
+    const timestamps = user.confidenceHistory.timestamp || [];
+    
+    for (let i = 0; i < confidences.length; i++) {
+      newHistory.push({
+        confidence: confidences[i],
+        timestamp: timestamps[i] || new Date()
+      });
+    }
+    
+    // Update user with new structure
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        confidenceHistory: newHistory
+      }
+    });
+    
+    console.log(`Migration completed for user: ${user.username}`);
+    return true;
+  }
+  return false;
 };
 
 export const resetPassword = async (formData) => {
@@ -351,9 +390,19 @@ export const resetPassword = async (formData) => {
       return { success: false, message: "No account found with this email" };
     }
     
-    // Update password
-    user.password = newPassword;
-    await user.save();
+    // Migrate confidence history if needed
+    try {
+      await migrateUserConfidenceHistory(user);
+    } catch (migrationError) {
+      console.log("[ACTIONS DEBUG] Migration not needed or already done");
+    }
+    
+    // Update password using direct update to avoid schema conflicts
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        password: newPassword
+      }
+    });
     
     console.log("[ACTIONS DEBUG] Password reset successful");
     return { success: true };
@@ -385,15 +434,14 @@ export const updateUserConfidence = async (username, confidence) => {
     
     // Initialize confidenceHistory if it doesn't exist
     if (!user.confidenceHistory) {
-      user.confidenceHistory = {
-        confidence: [],
-        timestamp: []
-      };
+      user.confidenceHistory = [];
     }
     
-    // Add the new confidence value and timestamp
-    user.confidenceHistory.confidence.push(confidence);
-    user.confidenceHistory.timestamp.push(now);
+    // Add the new confidence value and timestamp as an object
+    user.confidenceHistory.push({
+      confidence: confidence,
+      timestamp: now
+    });
     
     // Update lastConfidence and lastDetectedAt to reflect the current detection
     user.lastConfidence = confidence;

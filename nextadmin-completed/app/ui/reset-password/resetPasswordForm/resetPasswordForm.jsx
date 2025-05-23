@@ -9,6 +9,7 @@ import Link from "next/link";
 const ResetPasswordForm = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -17,6 +18,13 @@ const ResetPasswordForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
     
     try {
       // Create FormData manually
@@ -65,9 +73,20 @@ const ResetPasswordForm = () => {
           className={error ? styles.errorInput : ""}
         />
       </div>
+      <div className={styles.inputContainer}>
+        <input 
+          type="password" 
+          placeholder="Confirm New Password" 
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          aria-label="Confirm New Password"
+          className={error ? styles.errorInput : ""}
+        />
+      </div>
       <button 
         type="submit" 
-        disabled={isLoading || !email || !newPassword}
+        disabled={isLoading || !email || !newPassword || !confirmPassword}
         className={isLoading ? styles.loadingButton : ""}
       >
         {isLoading ? "Resetting..." : "Reset Password"}

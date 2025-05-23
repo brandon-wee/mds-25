@@ -44,13 +44,13 @@ const HelpPage = () => {
     {
       name: "Brandon",
       role: "Backend Developer",
-      image: "/avatar-1.png",
+      image: "/avatar-4.png",
       description: "Responsible for server architecture, database management, and API development. Ensures smooth data flow between edge devices and cloud services."
     },
     {
       name: "Yousuf",
       role: "AI Engineer",
-      image: "/avatar-2.png",
+      image: "/avatar-1.png",
       description: "Specializes in machine learning model development, optimization, and training. Focuses on improving facial recognition accuracy in challenging conditions."
     },
     {

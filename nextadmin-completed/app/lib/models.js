@@ -48,12 +48,7 @@ const userSchema = new mongoose.Schema(
       type: [Number], // or whatever type your embeddings are
       default: null
     },
-    faceId: {
-      type: String,
-      unique: true,
-      sparse: true,
-      default: null
-    },
+    // Removed faceId field completely
     // New fields for confidence tracking
     lastConfidence: {
       type: Number,
@@ -65,16 +60,16 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
-    confidenceHistory: {
+    confidenceHistory: [{
       confidence: {
-        type: [Number], // Array of confidence values
-        default: []
+        type: Number,
+        required: true
       },
       timestamp: {
-        type: [Date], // Array of timestamps
-        default: []
+        type: Date,
+        default: Date.now
       }
-    }
+    }]
   },
   { timestamps: true }
 );
@@ -83,6 +78,7 @@ userSchema.methods.toDebugJSON = function() {
   const obj = this.toObject();
   return obj;
 };
+// Remove the manual index creation - we'll handle this in the migration
 
 const modelSchema = new mongoose.Schema(
   {
