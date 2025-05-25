@@ -4,20 +4,27 @@ import { updateUserEmbeddings } from "@/app/lib/actions";
 import { processUserEmbeddings } from "@/app/lib/cloudApi";
 import styles from "./embeddingUpdate.module.css";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import Webcam from "react-webcam"; // Add this import
 
 const EmbeddingUpdate = ({ user }) => {
+  // Safety check - create a safe user object
+  const safeUser = {
+    username: user?.username || "Unknown",
+    email: user?.email || "",
+    id: user?.id || user?._id || "",
+    img: user?.img || "/noavatar.png",
+    hasEmbeddings: !!(user?.embeddings?.length || user?.embeddings?.exists || user?.embeddingsUpdated)
+  };
+  
   const [images, setImages] = useState([]);
   const [cameraActive, setCameraActive] = useState(false);
   const [status, setStatus] = useState(null);
   const [showCapturePreview, setShowCapturePreview] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
   const [cameraError, setCameraError] = useState(null);
-  const [videoElement, setVideoElement] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const videoRef = useRef(null);
   const fileInputRef = useRef(null);
-  const videoContainerRef = useRef(null);
+  const webcamRef = useRef(null); // New ref for Webcam component
   const isMounted = useRef(true);
 
   // Register when the component mounts and unmounts
@@ -25,235 +32,120 @@ const EmbeddingUpdate = ({ user }) => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
-      stopCamera();
     };
   }, []);
   
-  // Use a callback ref to ensure we have the video element
-  const setVideoRef = element => {
-    videoRef.current = element;
-    if (element) {
-      setVideoElement(element);
-      console.log("Video element ref set successfully");
-    }
+  // Define video constraints for the webcam
+  const videoConstraints = {
+    width: 640,
+    height: 480,
+    facingMode: "user",
   };
-  
-  // Create video element if needed - fallback method
-  const ensureVideoElement = () => {
-    if (videoRef.current) return videoRef.current;
-    
-    console.log("Video ref not available, trying to find video element in DOM");
-    
-    // Try to find video element by ID or within container
-    const videoEl = document.querySelector('#cameraVideo') || 
-                    videoContainerRef.current?.querySelector('video');
-    
-    if (videoEl) {
-      console.log("Found video element in DOM");
-      videoRef.current = videoEl;
-      return videoEl;
-    }
-    
-    // Last resort - create a video element dynamically if container exists
-    if (videoContainerRef.current) {
-      console.log("Creating video element dynamically");
-      const newVideo = document.createElement('video');
-      newVideo.id = 'cameraVideo';
-      newVideo.autoplay = true;
-      newVideo.playsInline = true;
-      newVideo.muted = true;
-      newVideo.className = styles.video;
-      
-      // Clear container and append new video
-      videoContainerRef.current.innerHTML = '';
-      videoContainerRef.current.appendChild(newVideo);
-      
-      videoRef.current = newVideo;
-      return newVideo;
-    }
-    
-    return null;
-  };
-  
-  // Handle camera activation with retries
-  const startCamera = async (retryCount = 0) => {
+
+  // Start webcam
+  const startCamera = useCallback(() => {
     if (!isMounted.current) return;
     
-    try {
-      console.log(`Attempting to start camera... (try ${retryCount + 1})`);
-      setCameraError(null);
-      setStatus({ info: true, message: "Activating camera..." });
-      
-      // Get video element - try multiple approaches
-      const videoEl = videoRef.current || ensureVideoElement();
-      
-      if (!videoEl) {
-        console.error("Cannot find or create video element");
-        if (retryCount < 2) {
-          console.log(`Retrying camera initialization in 500ms...`);
-          setTimeout(() => startCamera(retryCount + 1), 500);
-          return;
-        }
-        
-        setCameraError("Cannot initialize video element");
-        setStatus({ 
-          error: true, 
-          message: "Camera initialization failed: Video element not available. Please try refreshing the page."
-        });
-        return;
-      }
-      
-      // Define constraints with fallbacks for different browsers
-      const constraints = { 
-        video: { 
-          facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        },
-        audio: false
-      };
-      
-      console.log("Requesting camera access with constraints:", constraints);
-      
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log("Camera access granted:", stream.getVideoTracks()[0].label);
-      
-      // Make sure component is still mounted
-      if (!isMounted.current) {
-        console.log("Component unmounted, stopping camera");
-        stream.getTracks().forEach(track => track.stop());
-        return;
-      }
-      
-      // Attach stream to video element
-      videoEl.srcObject = stream;
-      
-      // Different approach for onloadedmetadata event
-      videoEl.onloadedmetadata = function() {
-        if (!isMounted.current) return;
-        console.log("Video metadata loaded");
-        
-        setTimeout(() => {
-          if (!isMounted.current) return;
-          try {
-            if (videoEl.paused) {
-              console.log("Attempting to play video");
-              
-              const playPromise = videoEl.play();
-              
-              if (playPromise !== undefined) {
-                playPromise
-                  .then(() => {
-                    if (!isMounted.current) return;
-                    console.log("Camera playing successfully");
-                    setCameraActive(true);
-                    setShowCapturePreview(false);
-                    setCapturedImage(null);
-                    setStatus({ success: true, message: "Camera activated successfully" });
-                  })
-                  .catch(err => {
-                    if (!isMounted.current) return;
-                    console.error("Error playing video:", err);
-                    setCameraError(`Play failed: ${err.message || "Unknown error"}`);
-                    setStatus({ error: true, message: "Browser blocked autoplay. Try clicking the video area." });
-                  });
-              } else {
-                if (!isMounted.current) return;
-                setCameraActive(true);
-                setStatus({ success: true, message: "Camera activated" });
-              }
-            } else {
-              if (!isMounted.current) return;
-              console.log("Video is already playing");
-              setCameraActive(true);
-              setStatus({ success: true, message: "Camera activated" });
-            }
-          } catch (playErr) {
-            if (!isMounted.current) return;
-            console.error("Error in onloadedmetadata:", playErr);
-            setCameraError(`Metadata error: ${playErr.message}`);
-          }
-        }, 100);
-      };
-      
-      // Add error handlers for video element
-      videoEl.onerror = (event) => {
-        if (!isMounted.current) return;
-        console.error("Video element error:", event);
-        setCameraError(`Video error: ${event.target.error?.message || "Unknown"}`);
-      };
-      
-    } catch (err) {
-      if (!isMounted.current) return;
-      console.error("Error in startCamera:", err);
-      
-      let errorMessage = "Camera access failed";
-      
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        errorMessage = "Camera access denied. Please allow camera access.";
-      } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
-        errorMessage = "No camera found on your device.";
-      } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
-        errorMessage = "Camera is already in use by another application.";
-      } else {
-        errorMessage = `Camera error: ${err.message || "Unknown error"}`;
-      }
-      
-      setCameraError(errorMessage);
-      setStatus({ error: true, message: errorMessage });
-    }
-  };
-  
-  // Stop camera safely
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    setCameraActive(false);
-    console.log("Camera stopped");
-  };
+    console.log("[CAMERA] Attempting to start camera...");
+    setCameraError(null);
+    setStatus({ info: true, message: "Activating camera..." });
+    setCameraActive(true);
+    setShowCapturePreview(false);
+    setCapturedImage(null);
+  }, []);
 
-  // Capture image from camera
-  const captureImage = () => {
-    if (!videoRef.current) return;
+  // Handle webcam errors
+  const handleWebcamError = useCallback((err) => {
+    if (!isMounted.current) return;
+    
+    console.error("[CAMERA] Webcam error:", err);
+    setCameraActive(false);
+    
+    let errorMessage = "Camera access failed";
+    
+    if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+      errorMessage = "Camera access denied. Please allow camera access in your browser settings.";
+    } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+      errorMessage = "No camera found on your device.";
+    } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+      errorMessage = "Camera is already in use by another application.";
+    } else if (err.name === "OverconstrainedError") {
+      errorMessage = "Camera cannot satisfy the requested constraints.";
+    } else {
+      errorMessage = `Camera error: ${err.message || "Unknown error"}`;
+    }
+    
+    setCameraError(errorMessage);
+    setStatus({ error: true, message: errorMessage });
+  }, []);
+
+  // Stop camera
+  const stopCamera = useCallback(() => {
+    if (webcamRef.current && webcamRef.current.stream) {
+      const stream = webcamRef.current.stream;
+      const tracks = stream.getTracks();
+      
+      tracks.forEach(track => track.stop());
+      console.log("[CAMERA] Camera stopped");
+    }
+    
+    setCameraActive(false);
+  }, []);
+
+  // Capture image from webcam
+  const captureImage = useCallback(() => {
+    if (!webcamRef.current) return;
     
     try {
-      console.log("Capturing image from camera");
-      const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      console.log("[CAMERA] Capturing image");
       
-      const context = canvas.getContext("2d");
-      context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      // Capture image from webcam
+      const imageSrc = webcamRef.current.getScreenshot();
       
-      // Show preview of captured image
-      const dataUrl = canvas.toDataURL("image/png");
-      setCapturedImage(dataUrl);
+      if (!imageSrc) {
+        console.error("[CAMERA] Failed to capture screenshot");
+        setStatus({ error: true, message: "Failed to capture image. Please try again." });
+        return;
+      }
+      
+      // Set preview
+      setCapturedImage(imageSrc);
       setShowCapturePreview(true);
       
-      canvas.toBlob((blob) => {
-        if (blob) {
+      // Convert base64 to file object
+      fetch(imageSrc)
+        .then(res => res.blob())
+        .then(blob => {
           const file = new File([blob], `capture_${Date.now()}.png`, { type: "image/png" });
           setImages(prev => [...prev, file]);
-          console.log("Image captured and added to collection");
-        }
-      });
+          console.log("[CAMERA] Image captured and added to collection");
+        })
+        .catch(err => {
+          console.error("[CAMERA] Error processing captured image:", err);
+          setStatus({ error: true, message: "Error processing image" });
+        });
     } catch (err) {
-      console.error("Error capturing image:", err);
+      console.error("[CAMERA] Error capturing image:", err);
       setStatus({ error: true, message: `Failed to capture image: ${err.message}` });
     }
-  };
+  }, [webcamRef]);
+
+  // Handle successful webcam initialization
+  const handleWebcamInit = useCallback(() => {
+    if (isMounted.current) {
+      console.log("[CAMERA] Webcam initialized successfully");
+      setStatus({ success: true, message: "Camera activated successfully" });
+    }
+  }, []);
 
   // Confirm using captured image
-  const confirmCapturedImage = () => {
+  const confirmCapturedImage = useCallback(() => {
     setShowCapturePreview(false);
     stopCamera();
-  };
+  }, [stopCamera]);
 
   // Retake the photo
-  const retakePhoto = () => {
+  const retakePhoto = useCallback(() => {
     setShowCapturePreview(false);
     setCapturedImage(null);
     
@@ -261,20 +153,20 @@ const EmbeddingUpdate = ({ user }) => {
     if (images.length > 0) {
       setImages(prev => prev.slice(0, -1));
     }
-  };
+  }, [images.length]);
 
   // Handle file upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = useCallback((e) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       setImages(prev => [...prev, ...filesArray]);
     }
-  };
+  }, []);
 
   // Remove an image from the list
-  const removeImage = (index) => {
+  const removeImage = useCallback((index) => {
     setImages(prev => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
   // Submit the form with images to update embeddings using CloudAPI
   const handleSubmit = async (e) => {
@@ -287,7 +179,7 @@ const EmbeddingUpdate = ({ user }) => {
 
     setStatus({ loading: true, message: "Calculating embeddings..." });
     
-    console.log("Submitting with username:", user.username);
+    console.log("Submitting with username:", safeUser.username);
     console.log("Number of images:", images.length);
     
     try {
@@ -295,15 +187,15 @@ const EmbeddingUpdate = ({ user }) => {
       console.log("Sending request to CloudAPI for embedding processing");
       
       // Use the username since that's what the FastAPI endpoint expects
-      const result = await processUserEmbeddings(user.username, images);
+      const result = await processUserEmbeddings(safeUser.username, images);
       console.log("CloudAPI response:", result);
       
       if (result.status === "success") {
-        console.log("CloudAPI success, updating local database with userId:", user.id || user._id);
+        console.log("CloudAPI success, updating local database with userId:", safeUser.id);
         
         // Update our local database to store the reference to the embedding
         const updateResult = await updateUserEmbeddings({
-          userId: user.id || user._id,
+          userId: safeUser.id,
           embeddingUpdated: true
         });
         
@@ -344,19 +236,19 @@ const EmbeddingUpdate = ({ user }) => {
       <div className={styles.userInfo}>
         <div className={styles.userImageContainer}>
           <Image
-            src={user.img || "/noavatar.png"}
-            alt={user.username}
+            src={safeUser.img}
+            alt={safeUser.username}
             width={100}
             height={100}
             className={styles.userImage}
           />
         </div>
         <div className={styles.userDetails}>
-          <h2>{user.username}</h2>
-          <p>{user.email}</p>
+          <h2>{safeUser.username}</h2>
+          <p>{safeUser.email}</p>
           <p className={styles.embedStatus}>
-            {user.embeddings?.length ? 
-              <span className={styles.embeddingsAvailable}>✓ Embeddings available ({user.embeddings.length} values)</span> : 
+            {safeUser.hasEmbeddings ? 
+              <span className={styles.embeddingsAvailable}>✓ Embeddings available</span> : 
               <span className={styles.noEmbeddings}>✗ No embeddings available</span>}
           </p>
         </div>
@@ -406,7 +298,7 @@ const EmbeddingUpdate = ({ user }) => {
                 {!cameraActive && !showCapturePreview ? (
                   <button 
                     type="button" 
-                    onClick={() => startCamera(0)}
+                    onClick={startCamera}
                     className={styles.cameraButton}
                   >
                     Start Camera
@@ -441,37 +333,33 @@ const EmbeddingUpdate = ({ user }) => {
                       </div>
                     ) : (
                       <>
-                        {/* Update the video wrapper with ref */}
-                        <div className={styles.videoWrapper} ref={videoContainerRef} id="videoContainer">
+                        <div 
+                          className={styles.videoWrapper}
+                          style={{ minHeight: "240px", display: "block" }}
+                        >
                           {cameraError && (
                             <div className={styles.cameraErrorOverlay}>
                               <p>{cameraError}</p>
                               <button 
-                                onClick={() => {
-                                  setCameraError(null);
-                                  startCamera(0);
-                                }}
+                                onClick={startCamera}
                                 className={styles.retryButton}
                               >
                                 Retry
                               </button>
                             </div>
                           )}
-                          <video 
-                            ref={setVideoRef}
-                            id="cameraVideo"
-                            autoPlay 
-                            playsInline
-                            muted
+                          
+                          <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            videoConstraints={videoConstraints}
+                            onUserMedia={handleWebcamInit}
+                            onUserMediaError={handleWebcamError}
+                            screenshotFormat="image/png"
                             className={styles.video}
-                            onClick={() => {
-                              if (videoRef.current && videoRef.current.paused) {
-                                videoRef.current.play()
-                                  .then(() => setCameraActive(true))
-                                  .catch(err => console.error("Click to play failed:", err));
-                              }
-                            }}
-                          ></video>
+                            mirrored={true}
+                          />
+                          
                           <div className={styles.cameraOverlay}>
                             <div className={styles.faceBoundary}></div>
                           </div>
@@ -497,7 +385,7 @@ const EmbeddingUpdate = ({ user }) => {
                   </div>
                 )}
                 
-                {cameraActive && (
+                {cameraActive && !showCapturePreview && !cameraError && (
                   <p className={styles.cameraStatus}>Camera is active. Position your face in the frame.</p>
                 )}
               </div>

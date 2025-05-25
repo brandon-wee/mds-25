@@ -286,7 +286,32 @@ export const findUserByUsername = async (username) => {
     connectToDB();
     const user = await User.findOne({ username: username });
     console.log(`[ACTIONS DEBUG] Found user by username ${username}:`, user ? user.username : 'not found');
-    return user;
+    
+    // Convert to a plain object and sanitize it to avoid circular references
+    if (user) {
+      const sanitizedUser = {
+        _id: user._id.toString(),
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        isAdmin: !!user.isAdmin,
+        isActive: !!user.isActive,
+        img: user.img || '',
+        embeddingsUpdated: !!user.embeddingsUpdated,
+        // Safely handle embeddings if they exist
+        embeddings: user.embeddings ? 
+          (Array.isArray(user.embeddings) ? 
+            { length: user.embeddings.length } : 
+            (typeof user.embeddings === 'object' ? { exists: true } : null)) 
+          : null
+      };
+      
+      return sanitizedUser;
+    }
+    
+    return null;
   } catch (err) {
     console.error("[ACTIONS ERROR] Error finding user:", err);
     throw new Error("Failed to find user");
