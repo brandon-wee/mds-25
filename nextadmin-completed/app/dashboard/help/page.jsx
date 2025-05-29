@@ -56,13 +56,13 @@ const HelpPage = () => {
     {
       name: "Edison",
       role: "AI Engineer",
-      image: "/avatar-3.png",
+      image: "/avatar-2.png",
       description: "Works on TinyML model compression, quantization, and knowledge distillation. Ensures models can run efficiently on resource-constrained edge devices."
     },
     {
       name: "Shadman",
       role: "Frontend Developer",
-      image: "/avatar-4.png",
+      image: "/avatar-3.png",
       description: "Creates intuitive user interfaces and dashboards. Ensures seamless user experience across the platform with responsive design."
     }
   ];
