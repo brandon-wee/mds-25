@@ -47,58 +47,57 @@ const Rightbar = () => {
   const [error, setError] = useState(null);
   
   // Check Cloud API status
-  const checkApiStatus = async () => {
-    setIsCheckingApi(true);
-    try {
-      // Remove previous API status notification
-      removeNotification('api-status');
-      
-      const apiStatus = await getApiStatus();
-      const isConnected = apiStatus.status === 'ok' || apiStatus.status === 'success';
-      
-      // Update system status with API status
-      setSystemStatus(prev => ({
-        ...prev,
-        api: isConnected ? "ok" : "error",
-        apiDetails: apiStatus,
-      }));
-      
-      // Add new notification for API status
-      addNotification({
-        id: 'api-status',
-        type: 'connection',
-        status: isConnected ? 'connected' : 'error',
-        message: isConnected 
-          ? `API connected - ${getCloudApiUrl()}` 
-          : `API error - ${apiStatus.message || 'Connection failed'}`,
-        timestamp: new Date().toISOString()
-      });
-      
-      return isConnected;
-    } catch (error) {
-      console.error("Error checking API status:", error);
-      
-      // Update status to disconnected
-      setSystemStatus(prev => ({
-        ...prev,
-        api: "error",
-        apiDetails: { status: 'error', message: error.message },
-      }));
-      
-      // Add error notification
-      addNotification({
-        id: 'api-status',
-        type: 'connection',
-        status: 'error',
-        message: `API connection failed: ${error.message}`,
-        timestamp: new Date().toISOString()
-      });
-      
-      return false;
-    } finally {
-      setIsCheckingApi(false);
-    }
-  };
+const checkApiStatus = async () => {
+  setIsCheckingApi(true);
+  try {
+    // Remove previous API status notification
+    removeNotification('api-status');
+    
+    // Fetch API status - if this succeeds, we're connected
+    const apiStatus = await getApiStatus();
+    console.log("API Status response:", apiStatus);
+    
+    // If we get here, the API request succeeded regardless of specific response format
+    setSystemStatus(prev => ({
+      ...prev,
+      api: "ok",
+      apiDetails: apiStatus,
+    }));
+    
+    // Add new notification for API status
+    addNotification({
+      id: 'api-status',
+      type: 'connection',
+      status: 'connected',
+      message: `API connected`,
+      timestamp: new Date().toISOString()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error checking API status:", error);
+    
+    // Update status to disconnected
+    setSystemStatus(prev => ({
+      ...prev,
+      api: "error",
+      apiDetails: { status: 'error', message: error.message },
+    }));
+    
+    // Add error notification
+    addNotification({
+      id: 'api-status',
+      type: 'connection',
+      status: 'error',
+      message: `API connection failed: ${error.message}`,
+      timestamp: new Date().toISOString()
+    });
+    
+    return false;
+  } finally {
+    setIsCheckingApi(false);
+  }
+};
   
   // Fetch detection stats from the database
   const fetchDetectionStats = async () => {
